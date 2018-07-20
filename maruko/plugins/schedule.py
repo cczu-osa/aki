@@ -11,6 +11,8 @@ from none.argparse import ArgumentParser, ParserExit
 from none.command import parse_command, call_command
 from none.helpers import context_id, send
 
+from maruko.db import make_table_name
+
 sched = CommandGroup('schedule', permission=perm.PRIVATE | perm.GROUP_ADMIN)
 
 _bot = get_bot()
