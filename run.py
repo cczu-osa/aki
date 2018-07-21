@@ -2,6 +2,7 @@ import os
 import sys
 
 
+# noinspection PyUnresolvedReferences
 def main():
     deployment_env = os.getenv('DEPLOYMENT_ENV', 'dev').lower()
 
@@ -20,10 +21,13 @@ def main():
         try:
             import config_prod as config
         except ImportError:
-            try:
-                import config
-            except ImportError:
-                pass
+            pass
+
+    if config is None:
+        try:
+            import config
+        except ImportError:
+            pass
 
     if config is None:
         print('There is no configuration file!', file=sys.stderr)
