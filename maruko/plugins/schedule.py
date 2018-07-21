@@ -31,12 +31,6 @@ if not _scheduler.running:
     _scheduler.start()
 
 
-@atexit.register
-def _():
-    if _scheduler.running:
-        _scheduler.shutdown()
-
-
 async def _schedule_callback(ctx: Dict[str, Any], name: str,
                              commands: Iterable[Tuple[Tuple[str], str]],
                              verbose: bool = False):
