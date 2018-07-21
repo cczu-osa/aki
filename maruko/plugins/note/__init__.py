@@ -1,5 +1,9 @@
 from none import CommandSession, CommandGroup
 
+from maruko.db import Session as DBSession
+
+from .model import Note
+
 note = CommandGroup('note')
 
 
