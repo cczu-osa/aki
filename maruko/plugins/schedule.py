@@ -1,4 +1,3 @@
-import atexit
 import re
 import shlex
 from typing import Iterable, Tuple, Dict, Any

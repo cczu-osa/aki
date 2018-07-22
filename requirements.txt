@@ -1,3 +1,6 @@
 none-bot
-apscheduler
-sqlalchemy
+apscheduler~=3.5.1
+psycopg2~=2.7.5
+gino~=0.7.4
+aiocontextvars~=0.1.2
+baidu-aip~=2.2.5
