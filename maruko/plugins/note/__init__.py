@@ -1,6 +1,7 @@
 from none import CommandSession, CommandGroup
 
 from maruko.db import Session as DBSession
+from maruko.command import handle_cancellation
 
 from .model import Note
 
@@ -32,13 +33,18 @@ async def note_remove(session: CommandSession):
     await session.send(f'你删除了笔记 {id_}')
 
 
-@note_remove.args_parser
+@note_add.args_parser
+@handle_cancellation
 async def _(session: CommandSession):
-    if session.current_key:
-        if session.current_arg_text.strip() in {'算了', '不删了', '取消'}:
-            session.finish('好的')
-            return
+    if not session.current_key and session.current_arg.strip():
+        session.args['content'] = session.current_arg
+    else:
+        session.args[session.current_key] = session.current_arg
 
+
+@note_remove.args_parser
+@handle_cancellation
+async def _(session: CommandSession):
     if not session.current_key and session.current_arg.strip():
         # initial interaction, and there is an argument, we take it as the id
         session.current_key = 'id'
