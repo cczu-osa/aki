@@ -16,7 +16,7 @@ from none.expression import render
 
 from maruko import baidu_aip
 from maruko.db import db
-from maruko.command import handle_cancellation
+from maruko.command import allow_cancellation
 
 from . import expressions as expr
 from .models import Note
@@ -73,7 +73,7 @@ async def note_remove(session: CommandSession):
 
 
 @note_add.args_parser
-@handle_cancellation
+@allow_cancellation
 async def _(session: CommandSession):
     if not session.current_key and session.current_arg.strip():
         session.args['content'] = session.current_arg
@@ -82,7 +82,7 @@ async def _(session: CommandSession):
 
 
 @note_remove.args_parser
-@handle_cancellation
+@allow_cancellation
 async def _(session: CommandSession):
     text = session.current_arg_text.strip()
 

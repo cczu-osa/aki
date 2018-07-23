@@ -1,4 +1,8 @@
-from typing import Optional, Iterable, Union
+"""
+Baidu AIP package wrapper.
+"""
+
+from typing import Optional
 
 from aip import AipNlp
 from none import get_bot
