@@ -14,7 +14,7 @@ from none.command import call_command
 from none.helpers import context_id
 from none.expression import render
 
-from maruko import aio, baidu_aip
+from maruko import baidu_aip
 from maruko.db import db
 from maruko.command import handle_cancellation
 
@@ -84,35 +84,25 @@ async def _(session: CommandSession):
 @note_remove.args_parser
 @handle_cancellation
 async def _(session: CommandSession):
-    is_first = False
-    if not session.current_key and session.current_arg.strip():
-        # first interaction, and there is an argument, we take it as the id
+    text = session.current_arg_text.strip()
+
+    if session.is_first_run and text:
+        # first run, and there is an argument, we take it as the id
         session.current_key = 'id'
-        is_first = True
 
     if session.current_key == 'id':
-        id_str = session.current_arg_text.strip()
         id_ = None
         try:
-            # try parse the message as an id
-            id_ = int(id_str)
+            # try parse the text message as an id
+            id_ = int(text)
         except ValueError:
             # it's not directly a number
-            if not is_first:
+            if not session.is_first_run:
                 # we are in and interactive session, do nlp
-                nlp = baidu_aip.get_nlp_client()
 
                 # user may want to ask for all notes, check it
-                match_score = 0.00
-                try:
-                    nlp_res = await aio.run_sync_func(
-                        nlp.simnet, '现在有哪些呢？',
-                        session.current_arg_text.strip())
-                    match_score = nlp_res.get('score', match_score)
-                except:
-                    # internal request of baidu aip may failed, ignore it
-                    pass
-
+                match_score = await baidu_aip.text_similarity(
+                    session.current_arg_text.strip(), '现在有哪些呢？')
                 if match_score > 0.70:
                     # we think it matches
                     await session.send_expr(expr.NOTE_QUERYING_ALL)
@@ -130,17 +120,12 @@ async def _(session: CommandSession):
                     return
 
                 # user may also put the id in a natural sentence, check it
-                m = re.search(r'\d+', id_str)
+                m = re.search(r'\d+', text)
                 if m:
                     possible_id = int(m.group(0))
-                    match_score = 0.00
-                    try:
-                        nlp_res = await aio.run_sync_func(
-                            nlp.simnet, f'删掉笔记 {possible_id}', id_str)
-                        match_score = nlp_res.get('score', match_score)
-                    except:
-                        # internal request of baidu aip may failed, ignore it
-                        pass
+                    match_score = await baidu_aip.text_similarity(
+                        session.current_arg_text.strip(),
+                        f'删掉笔记{possible_id}')
                     if match_score > 0.70:
                         # we think it matches
                         id_ = possible_id
