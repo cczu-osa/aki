@@ -37,13 +37,16 @@ async def handle_cancellation(session: CommandSession) -> None:
 
     :param session: command session to handle
     """
+    if session.is_first_run:
+        return
+
     text = session.current_arg_text.strip()
     is_possible_cancellation = False
     for kw in ('算', '别', '不', '取消'):
         if kw in text:
             is_possible_cancellation = True
             break
-    if not session.is_first_run and is_possible_cancellation:
+    if is_possible_cancellation:
         # we are in an interactive session, waiting for user's input
         if re.match(r'[算别不]\S{0,3}了吧?', text) or \
                 re.match(r'取消了?吧?', text):

@@ -3,6 +3,8 @@ from none import (
     on_natural_language, NLPSession, NLPResult
 )
 
+from maruko.command import allow_cancellation
+
 from . import expressions as expr
 
 w = CommandGroup('weather')
@@ -15,6 +17,7 @@ async def weather(session: CommandSession):
 
 
 @weather.args_parser
+@allow_cancellation
 async def _(session: CommandSession):
     striped_arg = session.current_arg_text.strip()
     if session.current_key:
