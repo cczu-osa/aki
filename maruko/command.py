@@ -1,6 +1,5 @@
 import re
 import functools
-import atexit
 from typing import Callable, Any
 
 from none import CommandSession
@@ -16,9 +15,22 @@ _cancellation_eg_sentences = [
 ]
 
 
-@atexit.register
-def _save_example_sentences() -> None:
-    pass
+async def is_cancellation(sentence: str) -> bool:
+    for kw in ('算', '别', '不', '取消'):
+        if kw in sentence:
+            # a keyword matches
+            break
+    else:
+        # no keyword matches
+        return False
+
+    if re.match(r'^那?[算别不]\w{0,3}了吧?$', sentence) or \
+            re.match(r'^那?(?:[给帮]我)?取消了?吧?$', sentence):
+        match = True
+    else:
+        _, match = await calc_sentence_similarity(
+            sentence, _cancellation_eg_sentences)
+    return match
 
 
 async def handle_cancellation(session: CommandSession) -> None:
@@ -40,23 +52,28 @@ async def handle_cancellation(session: CommandSession) -> None:
     if session.is_first_run:
         return
 
+    # we are in an interactive session, waiting for user's input
+    # handle possible cancellation
+
     text = session.current_arg_text.strip()
-    is_possible_cancellation = False
-    for kw in ('算', '别', '不', '取消'):
-        if kw in text:
-            is_possible_cancellation = True
-            break
-    if is_possible_cancellation:
-        # we are in an interactive session, waiting for user's input
-        if re.match(r'[算别不]\S{0,3}了吧?', text) or \
-                re.match(r'取消了?吧?', text):
-            match = True
-        else:
-            _, match = await calc_sentence_similarity(
-                text, _cancellation_eg_sentences)
-        if match:
+    small_sentences = re.split(r'\W+', text)
+
+    should_cancel = False
+    new_ctx_message = None
+    for i, sentence in enumerate(small_sentences):
+        if await is_cancellation(sentence):
+            should_cancel = True
+            continue
+
+        # this small sentence is not a cancellation, we split before this
+        new_ctx_message = '，'.join(small_sentences[i:])
+
+    if should_cancel:
+        if new_ctx_message is None:
             session.finish(
                 render(session.bot.config.SESSION_CANCELLATION_EXPRESSION))
+        else:
+            session.switch(new_ctx_message)
 
 
 def allow_cancellation(func: Callable) -> Callable:
