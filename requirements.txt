@@ -4,3 +4,4 @@ psycopg2~=2.7
 gino~=0.7
 aiocontextvars~=0.1
 baidu-aip~=2.2
+aiohttp~=3.3

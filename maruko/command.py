@@ -5,6 +5,7 @@ from typing import Callable, Any
 from none import CommandSession
 from none.expression import render
 
+from .log import logger
 from .nlp import ExampleSentence, calc_sentence_similarity
 
 _cancellation_eg_sentences = [
@@ -55,21 +56,25 @@ async def handle_cancellation(session: CommandSession) -> None:
     # we are in an interactive session, waiting for user's input
     # handle possible cancellation
 
+    # use current_arg_text, we don't mind losing rich text parts of message
     text = session.current_arg_text.strip()
     small_sentences = re.split(r'\W+', text)
+    logger.debug(f'Split small sentences: {small_sentences}')
 
     should_cancel = False
     new_ctx_message = None
-    for i, sentence in enumerate(small_sentences):
+    for i, sentence in enumerate(filter(lambda x: x.strip(), small_sentences)):
         if await is_cancellation(sentence):
+            logger.debug(f'Sentence "{sentence}" is a cancellation, continue')
             should_cancel = True
             continue
 
         # this small sentence is not a cancellation, we split before this
-        new_ctx_message = '，'.join(small_sentences[i:])
+        new_ctx_message = '，'.join(small_sentences[i:]).strip()
+        break
 
     if should_cancel:
-        if new_ctx_message is None:
+        if not new_ctx_message:
             session.finish(
                 render(session.bot.config.SESSION_CANCELLATION_EXPRESSION))
         else:

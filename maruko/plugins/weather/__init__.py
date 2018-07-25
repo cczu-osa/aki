@@ -1,7 +1,5 @@
-from none import (
-    CommandSession, CommandGroup,
-    on_natural_language, NLPSession, NLPResult
-)
+from none import CommandSession, CommandGroup
+from none import on_natural_language, NLPSession, NLPResult
 
 from maruko.command import allow_cancellation
 
