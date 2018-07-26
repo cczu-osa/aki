@@ -101,7 +101,7 @@ async def _(session: CommandSession):
                 # we are in and interactive session, do nlp
 
                 # user may want to ask for all notes, check it
-                match_score = await baidu_aip.text_similarity(
+                match_score = await baidu_aip.simnet(
                     session.current_arg_text.strip(), '现在有哪些呢？')
                 if match_score > 0.70:
                     # we think it matches
@@ -123,7 +123,7 @@ async def _(session: CommandSession):
                 m = re.search(r'\d+', text)
                 if m:
                     possible_id = int(m.group(0))
-                    match_score = await baidu_aip.text_similarity(
+                    match_score = await baidu_aip.simnet(
                         session.current_arg_text.strip(),
                         f'删掉笔记{possible_id}')
                     if match_score > 0.70:

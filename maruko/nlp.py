@@ -31,7 +31,7 @@ async def calc_sentence_similarity(
         great_score: float = 0.80) -> Tuple[float, bool]:
     max_score = 0.00
     for es in example_sentences:
-        curr_score = await baidu_aip.text_similarity(sentence, es.text)
+        curr_score = await baidu_aip.simnet(sentence, es.text)
         max_score = max(max_score, curr_score)
         if curr_score >= ok_score:
             # this is an ok match, update the average score

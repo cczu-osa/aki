@@ -2,7 +2,7 @@
 Baidu AIP package wrapper.
 """
 
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 from aip import AipNlp
 from none import get_bot
@@ -22,7 +22,7 @@ def get_nlp_client() -> AipNlp:
     return _nlp
 
 
-async def text_similarity(text1: str, text2: str) -> float:
+async def simnet(text1: str, text2: str) -> float:
     nlp = get_nlp_client()
 
     score = 0.00
@@ -33,3 +33,13 @@ async def text_similarity(text1: str, text2: str) -> float:
         # internal request of baidu aip may failed, ignore it
         pass
     return score
+
+
+async def lexer(text: str) -> List[Dict[str, Any]]:
+    nlp = get_nlp_client()
+    try:
+        nlp_res = await aio.run_sync_func(nlp.lexer, text)
+        return nlp_res.get('items', [])
+    except:
+        # internal request of baidu aip may failed, ignore it
+        return []
