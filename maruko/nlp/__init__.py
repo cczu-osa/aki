@@ -5,6 +5,8 @@ from . import baidu_aip
 
 async def sentence_similarity(sentence1: str, sentence2: str) -> float:
     """Basic sentence similarity calculation."""
+    if sentence1 == sentence2:
+        return 1.00
     return await baidu_aip.simnet(sentence1, sentence2)
 
 
