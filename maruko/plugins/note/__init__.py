@@ -14,7 +14,7 @@ from none.command import call_command
 from none.helpers import context_id
 from none.expression import render
 
-from maruko import baidu_aip
+from maruko import nlp
 from maruko.db import db
 from maruko.command import allow_cancellation
 
@@ -101,7 +101,7 @@ async def _(session: CommandSession):
                 # we are in and interactive session, do nlp
 
                 # user may want to ask for all notes, check it
-                match_score = await baidu_aip.simnet(
+                match_score = await nlp.sentence_similarity(
                     session.current_arg_text.strip(), '现在有哪些呢？')
                 if match_score > 0.70:
                     # we think it matches
@@ -123,7 +123,7 @@ async def _(session: CommandSession):
                 m = re.search(r'\d+', text)
                 if m:
                     possible_id = int(m.group(0))
-                    match_score = await baidu_aip.simnet(
+                    match_score = await nlp.sentence_similarity(
                         session.current_arg_text.strip(),
                         f'删掉笔记{possible_id}')
                     if match_score > 0.70:

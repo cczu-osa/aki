@@ -6,7 +6,7 @@ from none import CommandSession
 from none.expression import render
 
 from .log import logger
-from .nlp import ExampleSentence, calc_sentence_similarity
+from .nlp import ExampleSentence, sentence_similarity_adv
 
 _cancellation_eg_sentences = [
     ExampleSentence('算了，不用了'),
@@ -29,7 +29,7 @@ async def is_cancellation(sentence: str) -> bool:
             re.match(r'^那?(?:[给帮]我)?取消了?吧?$', sentence):
         match = True
     else:
-        _, match = await calc_sentence_similarity(
+        _, match = await sentence_similarity_adv(
             sentence, _cancellation_eg_sentences)
     return match
 

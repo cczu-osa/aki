@@ -12,7 +12,7 @@ from none import on_natural_language, NLPSession, NLPResult
 from none import get_bot
 from none.helpers import context_id
 
-from maruko import baidu_aip
+from maruko import nlp
 from maruko.log import logger
 
 bot = get_bot()
@@ -100,7 +100,7 @@ async def _(session: NLPSession):
     ctx_id = context_id(session.ctx)
     if ctx_id in tuling_sessions:
         ne_type = tuling_sessions[ctx_id]
-        words = await baidu_aip.lexer(session.msg_text)
+        words = await nlp.baidu_aip.lexer(session.msg_text)
         for w in words:
             if ne_type == w['ne']:
                 confidence = 100.0 - len(words) * 5.0
@@ -121,7 +121,7 @@ async def _(session: NLPSession):
     if match:
         confidence = 100.0
     else:
-        score = await baidu_aip.simnet('来陪我聊天', text)
+        score = await nlp.sentence_similarity('来陪我聊天', text)
         if score > 0.70:
             match = True
             confidence = math.ceil(score * 10) * 10  # 0.74 -> 80.0

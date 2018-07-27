@@ -3,7 +3,15 @@ from typing import List, Tuple
 from . import baidu_aip
 
 
+async def sentence_similarity(sentence1: str, sentence2: str) -> float:
+    """Basic sentence similarity calculation."""
+    return await baidu_aip.simnet(sentence1, sentence2)
+
+
 class ExampleSentence:
+    """
+    Represent an example sentence when calculating similarity.
+    """
     __slots__ = ('text', 'avg_score', 'total_compare', 'solid')
 
     def __init__(self, text: str, *,
@@ -22,16 +30,27 @@ class ExampleSentence:
                f'solid={self.solid})>'
 
 
-async def calc_sentence_similarity(
+async def sentence_similarity_adv(
         sentence: str,
         example_sentences: List[ExampleSentence],
         max_example_sentences: int = 6,
         keep_solid_sentence: bool = True,
         ok_score: float = 0.70,
         great_score: float = 0.80) -> Tuple[float, bool]:
+    """
+    Advanced version of sentence similarity calculation.
+
+    :param sentence: sentence to check
+    :param example_sentences: example sentences to compare with
+    :param max_example_sentences: max number of example sentences
+    :param keep_solid_sentence: keep solid eg sentences when reaching max num
+    :param ok_score: score that we think the similarity is ok
+    :param great_score: score that we think the similarity is great
+    :return: tuple of final score and match or not
+    """
     max_score = 0.00
     for es in example_sentences:
-        curr_score = await baidu_aip.simnet(sentence, es.text)
+        curr_score = await sentence_similarity(sentence, es.text)
         max_score = max(max_score, curr_score)
         if curr_score >= ok_score:
             # this is an ok match, update the average score
