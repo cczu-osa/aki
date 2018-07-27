@@ -10,10 +10,13 @@ from aiocqhttp.message import Message, escape
 from none import on_command, CommandSession
 from none import on_natural_language, NLPSession, NLPResult
 from none import get_bot
+from none.expression import render
 from none.helpers import context_id
 
 from maruko import nlp
 from maruko.log import logger
+
+from . import expressions as expr
 
 bot = get_bot()
 
@@ -36,7 +39,7 @@ def tuling_ne_type(replies: List[str],
 
 @on_command('tuling', aliases=('聊天', '对话'))
 async def tuling(session: CommandSession):
-    message = session.get('message', prompt='我已经准备好啦，来跟我聊天吧~')
+    message = session.get('message', prompt_expr=expr.I_AM_READY)
 
     ctx_id = context_id(session.ctx)
     if ctx_id in tuling_sessions:
@@ -57,7 +60,7 @@ async def tuling(session: CommandSession):
             await session.send(escape(reply))
             await asyncio.sleep(0.8)
     else:
-        await session.send('看不懂你在说什么呢')
+        await session.send_expr(expr.I_DONT_UNDERSTAND)
 
     one_time = session.get_optional('one_time', False)
     if one_time:
@@ -83,18 +86,19 @@ async def tuling(session: CommandSession):
 @tuling.args_parser
 async def _(session: CommandSession):
     if session.current_key == 'message':
-        # TODO: 表达再见的意思时 finish
-        if session.current_arg_text.strip() in ('结束', '拜拜', '再见'):
-            session.finish('拜拜啦，你忙吧，下次想聊天随时找我哦~')
+        text = session.current_arg_text.strip()
+        if ('拜拜' in text or '再见' in text) and len(text) <= 4:
+            session.finish(render(expr.BYE_BYE))
             return
         session.args[session.current_key] = session.current_arg
 
 
 @on_natural_language(only_to_me=False)
 async def _(session: NLPSession):
-    confidence = None
+    confidence = None  # by default we don't return result
 
     if session.ctx['to_me']:
+        # if the user is talking to us, we may consider reply to him/her
         confidence = 60.0
 
     ctx_id = context_id(session.ctx)
@@ -103,6 +107,9 @@ async def _(session: NLPSession):
         words = await nlp.baidu_aip.lexer(session.msg_text)
         for w in words:
             if ne_type == w['ne']:
+                # if there is a tuling session existing,
+                # and the user's input is exactly what tuling wants,
+                # we are sure that the user is replying tuling
                 confidence = 100.0 - len(words) * 5.0
                 break
 
