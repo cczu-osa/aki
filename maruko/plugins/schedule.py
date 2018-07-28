@@ -141,6 +141,34 @@ async def _(session: CommandSession):
     session.args['argv'] = shlex.split(session.current_arg_text)
 
 
+async def _parse_args(session: CommandSession, parser: ArgumentParser,
+                      argv: Optional[List[str]], help_msg: str) -> Namespace:
+    if not argv:
+        await session.send(help_msg)
+    else:
+        try:
+            return parser.parse_args(argv)
+        except ParserExit as e:
+            if e.status == 0:
+                # --help
+                await session.send(help_msg)
+            else:
+                await session.send(
+                    '参数不足或不正确，请使用 --help 参数查询使用帮助')
+    session.finish()  # this will stop the command session
+
+
+def _format_job(job_name: str, job: scheduler.Job) -> str:
+    commands = scheduler.get_scheduled_commands_from_job(job)
+    commands_str = '\n'.join(
+        [f'- {cmd.name}，参数：{cmd.current_arg}' for cmd in commands])
+    return (f'名称：{job_name}\n'
+            f'下次触发时间：'
+            f'{job.next_run_time.strftime("%Y-%m-%d %H:%M:%S")}\n'
+            f'命令：\n'
+            f'{commands_str}')
+
+
 _sched_add_help = r"""
 使用方法：
     schedule.add [OPTIONS] --name NAME COMMAND [COMMAND ...]
@@ -178,31 +206,3 @@ _sched_remove_help = r"""
 NAME：
     计划任务名称
 """.strip()
-
-
-async def _parse_args(session: CommandSession, parser: ArgumentParser,
-                      argv: Optional[List[str]], help_msg: str) -> Namespace:
-    if not argv:
-        await session.send(help_msg)
-    else:
-        try:
-            return parser.parse_args(argv)
-        except ParserExit as e:
-            if e.status == 0:
-                # --help
-                await session.send(help_msg)
-            else:
-                await session.send(
-                    '参数不足或不正确，请使用 --help 参数查询使用帮助')
-    session.finish()  # this will stop the command session
-
-
-def _format_job(job_name: str, job: scheduler.Job) -> str:
-    commands = scheduler.get_scheduled_commands_from_job(job)
-    commands_str = '\n'.join(
-        [f'- {cmd.name}，参数：{cmd.current_arg}' for cmd in commands])
-    return (f'名称：{job_name}\n'
-            f'下次触发时间：'
-            f'{job.next_run_time.strftime("%Y-%m-%d %H:%M:%S")}\n'
-            f'命令：\n'
-            f'{commands_str}')
