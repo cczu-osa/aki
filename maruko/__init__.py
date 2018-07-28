@@ -11,9 +11,9 @@ from .log import logger
 
 def init(config_object: Any) -> Quart:
     none.init(config_object)
-    bot_ = none.get_bot()
+    bot = none.get_bot()
 
-    if bot_.config.DEBUG:
+    if bot.config.DEBUG:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
@@ -24,4 +24,4 @@ def init(config_object: Any) -> Quart:
                       'maruko.plugins')
     db.create_all()
 
-    return bot_.asgi
+    return bot.asgi
