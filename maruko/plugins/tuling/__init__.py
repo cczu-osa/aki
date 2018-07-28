@@ -49,8 +49,7 @@ async def tuling(session: CommandSession):
               if s.type == 'image' and 'url' in s.data]
 
     # call tuling api
-    replies = await call_tuling_api(context_id(session.ctx),
-                                    text, images)
+    replies = await call_tuling_api(session, text, images)
     logger.debug(f'Got tuling\'s replies: {replies}')
 
     if replies:
