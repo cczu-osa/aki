@@ -44,7 +44,7 @@ async def sched_add(session: CommandSession):
 
     if args.verbose:
         parsed_commands.append(
-            ScheduledCommand('echo', f'开始执行计划任务 {args.name}……'))
+            ScheduledCommand(('echo',), f'开始执行计划任务 {args.name}……'))
 
     for cmd_str in args.commands:
         cmd, current_arg = parse_command(session.bot, cmd_str)
