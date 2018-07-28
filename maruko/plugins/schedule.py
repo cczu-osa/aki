@@ -1,50 +1,24 @@
 import re
 import shlex
-from typing import Iterable, Tuple, Dict, Any
+import asyncio
+from typing import List, Optional
 
-from apscheduler.jobstores.base import ConflictingIdError
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from none import get_bot, CommandGroup, CommandSession, permission as perm
-from none.argparse import ArgumentParser, ParserExit
-from none.command import parse_command, call_command
-from none.helpers import context_id, send
+from none import CommandGroup, CommandSession, permission as perm
+from none.argparse import ArgumentParser, ParserExit, Namespace
+from none.command import parse_command
+from none.helpers import context_id
 
-from maruko.db import make_table_name
+from maruko import scheduler
+from maruko.scheduler import ScheduledCommand
 
-sched = CommandGroup('schedule', permission=perm.PRIVATE | perm.GROUP_ADMIN)
+PLUGIN_NAME = 'schedule'
 
-_bot = get_bot()
-
-_scheduler = AsyncIOScheduler(
-    jobstores={
-        'default': SQLAlchemyJobStore(
-            url=_bot.config.DATABASE_URL,
-            tablename=make_table_name('schedule', 'apscheduler_jobs')
-        )
-    },
-    timezone='Asia/Shanghai'
-)
-
-if not _scheduler.running:
-    _scheduler.start()
-
-
-async def _schedule_callback(ctx: Dict[str, Any], name: str,
-                             commands: Iterable[Tuple[Tuple[str], str]],
-                             verbose: bool = False):
-    if verbose:
-        await send(_bot, ctx, f'开始执行计划任务 {name}……')
-    for cmd_name, current_arg in commands:
-        await call_command(_bot, ctx, cmd_name,
-                           current_arg=current_arg,
-                           check_perm=True,
-                           disable_interaction=True)
+sched = CommandGroup(PLUGIN_NAME, permission=perm.PRIVATE | perm.GROUP_ADMIN)
 
 
 @sched.command('add', aliases=('schedule',))
 async def sched_add(session: CommandSession):
-    parser = ArgumentParser('schedule.add')
+    parser = ArgumentParser()
     parser.add_argument('-S', '--second')
     parser.add_argument('-M', '--minute')
     parser.add_argument('-H', '--hour')
@@ -56,85 +30,111 @@ async def sched_add(session: CommandSession):
     parser.add_argument('--name', required=True)
     parser.add_argument('commands', nargs='+')
 
-    argv = session.get_optional('argv')
-    if not argv:
-        await session.send(_sched_add_help)
-        return
+    args = await _parse_args(session, parser,
+                             argv=session.get_optional('argv'),
+                             help_msg=_sched_add_help)
 
-    try:
-        args = parser.parse_args(argv)
-    except ParserExit as e:
-        if e.status == 0:
-            # --help
-            await session.send(_sched_add_help)
-        else:
-            await session.send('参数不足或不正确，请使用 --help 参数查询使用帮助')
-        return
-
-    if not re.match(r'[_a-zA-Z][_\w]*', args.name):
+    if not re.match(r'[_a-zA-Z][_a-zA-Z0-9]*', args.name):
         await session.send(
             '计划任务名必须仅包含字母、数字、下划线，且以字母或下划线开头')
         return
 
-    parsed_commands = []
-    invalid_commands = []
+    parsed_commands: List[ScheduledCommand] = []
+    invalid_commands: List[str] = []
+
+    if args.verbose:
+        parsed_commands.append(
+            ScheduledCommand('echo', f'开始执行计划任务 {args.name}……'))
+
     for cmd_str in args.commands:
         cmd, current_arg = parse_command(session.bot, cmd_str)
         if cmd:
             tmp_session = CommandSession(session.bot, session.ctx, cmd,
                                          current_arg=current_arg)
             if await cmd.run(tmp_session, dry=True):
-                parsed_commands.append((cmd.name, current_arg))
-            else:
-                invalid_commands.append(cmd_str)
+                parsed_commands.append(ScheduledCommand(cmd.name, current_arg))
+                continue
+        invalid_commands.append(cmd_str)
     if invalid_commands:
-        invalid_commands_joined = '\r\n'.join(
-            [f'{i+1}: {c}' for i, c in enumerate(invalid_commands)])
+        invalid_commands_joined = '\n'.join(
+            [f'- {c}' for c in invalid_commands])
         await session.send(f'计划任务添加失败，'
                            f'因为下面的 {len(invalid_commands)} 个命令无法被运行'
-                           f'（命令不存在或权限不够）：\r\n\r\n'
+                           f'（命令不存在或权限不够）：\n'
                            f'{invalid_commands_joined}')
         return
 
-    job_id = f'{context_id(session.ctx)}/job/{args.name}'
     trigger_args = {k: v for k, v in args.__dict__.items()
                     if k in {'second', 'minute', 'hour',
                              'day', 'month', 'day_of_week'}}
     try:
-        job = _scheduler.add_job(
-            _schedule_callback,
+        job = await scheduler.add_scheduled_commands(
+            parsed_commands,
+            job_id=scheduler.make_job_id(
+                PLUGIN_NAME, context_id(session.ctx), args.name),
+            ctx=session.ctx,
             trigger='cron', **trigger_args,
-            id=job_id,
-            kwargs={
-                'ctx': session.ctx,
-                'name': args.name,
-                'commands': parsed_commands,
-                'verbose': args.verbose,
-            },
-            replace_existing=args.force,
-            misfire_grace_time=30
+            replace_existing=args.force
         )
-    except ConflictingIdError:
+    except scheduler.JobIdConflictError:
         # a job with same name exists
         await session.send(f'计划任务 {args.name} 已存在，'
                            f'若要覆盖请使用 --force 参数')
         return
 
-    await session.send(f'计划任务 {args.name} 添加成功，下次运行时间：'
-                       f'{job.next_run_time.strftime("%Y-%m-%d %H:%M:%S")}')
+    await session.send(f'计划任务 {args.name} 添加成功')
+    await session.send(_format_job(args.name, job))
+
+
+@sched.command('get')
+async def sched_get(session: CommandSession):
+    parser = ArgumentParser()
+    parser.add_argument('name')
+    args = await _parse_args(session, parser,
+                             argv=session.get_optional('argv'),
+                             help_msg=_sched_get_help)
+    job = await scheduler.get_job(scheduler.make_job_id(
+        PLUGIN_NAME, context_id(session.ctx), args.name))
+    if not job:
+        await session.send(f'没有找到计划任务 {args.name}，请检查你的输入是否正确')
+        return
+
+    await session.send('找到计划任务如下')
+    await session.send(_format_job(args.name, job))
 
 
 @sched.command('list')
 async def sched_list(session: CommandSession):
-    pass
+    job_id_prefix = scheduler.make_job_id(PLUGIN_NAME, context_id(session.ctx))
+    jobs = await scheduler.get_jobs(scheduler.make_job_id(
+        PLUGIN_NAME, context_id(session.ctx)))
+    if not jobs:
+        await session.send(f'你还没有添加过计划任务')
+        return
+
+    for job in jobs:
+        await session.send(_format_job(job.id[len(job_id_prefix):], job))
+        await asyncio.sleep(0.8)
+    await session.send_expr(f'以上是所有的 {len(jobs)} 个计划任务')
 
 
 @sched.command('remove')
 async def sched_remove(session: CommandSession):
-    pass
+    parser = ArgumentParser()
+    parser.add_argument('name')
+    args = await _parse_args(session, parser,
+                             argv=session.get_optional('argv'),
+                             help_msg=_sched_remove_help)
+    ok = await scheduler.remove_job(scheduler.make_job_id(
+        PLUGIN_NAME, context_id(session.ctx), args.name))
+    if ok:
+        await session.send(f'成功删除计划任务 {args.name}')
+    else:
+        await session.send(f'没有找到计划任务 {args.name}，请检查你的输入是否正确')
 
 
 @sched_add.args_parser
+@sched_get.args_parser
 @sched_list.args_parser
 @sched_remove.args_parser
 async def _(session: CommandSession):
@@ -142,5 +142,67 @@ async def _(session: CommandSession):
 
 
 _sched_add_help = r"""
-使用方法：schedule.add
+使用方法：
+    schedule.add [OPTIONS] --name NAME COMMAND [COMMAND ...]
+
+OPTIONS：
+    -h, --help  显示本使用帮助
+    -S SECOND, --second SECOND  定时器的秒参数
+    -M MINUTE, --minute MINUTE  定时器的分参数
+    -H HOUR, --hour HOUR  定时器的时参数
+    -d DAY, --day DAY  定时器  的日参数
+    -m MONTH, --month MONTH  定时器的月参数
+    -w DAY_OF_WEEK, --day-of-week DAY_OF_WEEK  定时器的星期参数
+    -f, --force  强制覆盖已有的同名计划任务
+    -v, --verbose  在执行计划任务时输出更多信息
+
+NAME：
+    计划任务名称
+
+COMMAND：
+    要计划执行的命令，如果有空格或特殊字符，需使用引号括起来
 """.strip()
+
+_sched_get_help = r"""
+使用方法：
+    schedule.get NAME
+
+NAME：
+    计划任务名称
+""".strip()
+
+_sched_remove_help = r"""
+使用方法：
+    schedule.remove NAME
+
+NAME：
+    计划任务名称
+""".strip()
+
+
+async def _parse_args(session: CommandSession, parser: ArgumentParser,
+                      argv: Optional[List[str]], help_msg: str) -> Namespace:
+    if not argv:
+        await session.send(help_msg)
+    else:
+        try:
+            return parser.parse_args(argv)
+        except ParserExit as e:
+            if e.status == 0:
+                # --help
+                await session.send(help_msg)
+            else:
+                await session.send(
+                    '参数不足或不正确，请使用 --help 参数查询使用帮助')
+    session.finish()  # this will stop the command session
+
+
+def _format_job(job_name: str, job: scheduler.Job) -> str:
+    commands = scheduler.get_scheduled_commands_from_job(job)
+    commands_str = '\n'.join(
+        [f'- {cmd.name}，参数：{cmd.current_arg}' for cmd in commands])
+    return (f'名称：{job_name}\n'
+            f'下次触发时间：'
+            f'{job.next_run_time.strftime("%Y-%m-%d %H:%M:%S")}\n'
+            f'命令：\n'
+            f'{commands_str}')

@@ -5,7 +5,7 @@ from typing import Any
 import none
 from quart import Quart
 
-from . import db
+from . import db, scheduler
 from .log import logger
 
 
@@ -19,6 +19,7 @@ def init(config_object: Any) -> Quart:
         logger.setLevel(logging.INFO)
 
     db.init()
+    scheduler.init()
     none.load_builtin_plugins()
     none.load_plugins(path.join(path.dirname(__file__), 'plugins'),
                       'maruko.plugins')
