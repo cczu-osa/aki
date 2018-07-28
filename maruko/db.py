@@ -27,5 +27,8 @@ def init() -> None:
 
 
 def create_all() -> None:
+    """
+    Create all database tables defined by plugins.
+    """
     logger.debug(f'Creating all db tables: {",".join(db.tables)}')
     asyncio.get_event_loop().run_until_complete(db.gino.create_all())
