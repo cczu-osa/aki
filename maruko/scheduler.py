@@ -141,11 +141,13 @@ async def _scheduled_commands_callback(
 
 
 async def get_job(job_id: str) -> Job:
+    """Get a scheduler job by id."""
     scheduler = get_scheduler()
     return await aio.run_sync_func(scheduler.get_job, job_id)
 
 
 async def get_jobs(job_id_prefix: str) -> List[Job]:
+    """Get all scheduler jobs with given id prefix."""
     scheduler = get_scheduler()
     all_jobs = await aio.run_sync_func(scheduler.get_jobs)
     return list(filter(
@@ -155,6 +157,7 @@ async def get_jobs(job_id_prefix: str) -> List[Job]:
 
 
 async def remove_job(job_id: str) -> bool:
+    """Remove a scheduler job by id."""
     scheduler = get_scheduler()
     try:
         await aio.run_sync_func(scheduler.remove_job, job_id)
@@ -163,5 +166,6 @@ async def remove_job(job_id: str) -> bool:
         return False
 
 
-def get_scheduled_commands_from_job(job: Job):
+def get_scheduled_commands_from_job(job: Job) -> List[ScheduledCommand]:
+    """Get list of ScheduledCommand from a job."""
     return job.kwargs['commands']
