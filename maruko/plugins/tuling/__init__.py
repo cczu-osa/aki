@@ -9,7 +9,7 @@ import aiohttp
 from aiocqhttp.message import Message, escape
 from none import on_command, CommandSession
 from none import on_natural_language, NLPSession, NLPResult
-from none import get_bot
+from none.session import BaseSession
 from none.expression import render
 from none.helpers import context_id
 
@@ -17,8 +17,6 @@ from maruko import nlp
 from maruko.log import logger
 
 from . import expressions as expr
-
-bot = get_bot()
 
 # key: context id, value: named entity type
 tuling_sessions = {}
@@ -138,7 +136,7 @@ async def _(session: NLPSession):
 
 
 async def call_tuling_api(
-        ctx_id: str,
+        session: BaseSession,
         text: Optional[str],
         image: Optional[Union[List[str], str]]) -> List[str]:
     url = 'http://openapi.tuling123.com/openapi/api/v2'
@@ -146,8 +144,9 @@ async def call_tuling_api(
         'reqType': 0,
         'perception': {},
         'userInfo': {
-            'apiKey': bot.config.TULING123_API_KEY,
-            'userId': hashlib.md5(ctx_id.encode('ascii')).hexdigest()
+            'apiKey': session.bot.config.TULING123_API_KEY,
+            'userId': hashlib.md5(
+                context_id(session.ctx).encode('ascii')).hexdigest()
         }
     }
 

@@ -21,9 +21,9 @@ def init() -> None:
     and after initializing "none" module.
     """
     logger.debug('Initializing database')
-    bot_ = get_bot()
+    bot = get_bot()
     asyncio.get_event_loop().run_until_complete(
-        db.set_bind(bot_.config.DATABASE_URL))
+        db.set_bind(bot.config.DATABASE_URL))
 
 
 def create_all() -> None:

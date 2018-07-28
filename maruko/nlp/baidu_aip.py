@@ -15,16 +15,15 @@ _nlp: Optional[AipNlp] = None
 def get_nlp_client() -> AipNlp:
     global _nlp
     if _nlp is None:
-        bot_ = get_bot()
-        _nlp = AipNlp(bot_.config.BAIDU_AIP_APP_ID,
-                      bot_.config.BAIDU_AIP_API_KEY,
-                      bot_.config.BAIDU_AIP_SECRET_KEY)
+        bot = get_bot()
+        _nlp = AipNlp(bot.config.BAIDU_AIP_APP_ID,
+                      bot.config.BAIDU_AIP_API_KEY,
+                      bot.config.BAIDU_AIP_SECRET_KEY)
     return _nlp
 
 
 async def simnet(text1: str, text2: str) -> float:
     nlp = get_nlp_client()
-
     score = 0.00
     try:
         nlp_res = await aio.run_sync_func(nlp.simnet, text1, text2)
