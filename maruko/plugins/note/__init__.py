@@ -31,10 +31,10 @@ async def note_count(ctx_id: str) -> int:
 
 @note.command('add', aliases=('记录', '记笔记', '添加笔记'))
 async def note_add(session: CommandSession):
-    content = session.get('content', prompt_expr=expr.NOTE_ADD_WHAT_CONTENT)
+    content = session.get('content', prompt_expr=expr.ADD_WHAT_CONTENT)
     new_note = await Note.create(
         content=content, context_id=context_id(session.ctx))
-    await session.send_expr(expr.NOTE_ADD_SUCCESS,
+    await session.send_expr(expr.ADD_SUCCESS,
                             id=new_note.id, content=new_note.content)
 
 
@@ -42,7 +42,7 @@ async def note_add(session: CommandSession):
 async def _(session: CommandSession):
     count = await note_count(context_id(session.ctx))
     if count == 0:
-        await session.send_expr(expr.NOTE_LIST_EMPTY)
+        await session.send_expr(expr.LIST_EMPTY)
         return
 
     all_notes = await Note.query.where(
@@ -50,7 +50,7 @@ async def _(session: CommandSession):
     for n in all_notes:
         await session.send(f'ID：{n.id}\r\n内容：{n.content}')
         await asyncio.sleep(0.8)
-    await session.send_expr(expr.NOTE_LIST_COMPLETE, count=count)
+    await session.send_expr(expr.LIST_COMPLETE, count=count)
 
 
 @note.command('remove', aliases=('删除记录', '删除笔记'))
@@ -58,17 +58,17 @@ async def note_remove(session: CommandSession):
     ctx_id = context_id(session.ctx)
     count = await note_count(ctx_id)
     if count == 0:
-        await session.send_expr(expr.NOTE_LIST_EMPTY)
+        await session.send_expr(expr.LIST_EMPTY)
         return
 
-    id_ = session.get('id', prompt_expr=expr.NOTE_DEL_WHICH_ID)
+    id_ = session.get('id', prompt_expr=expr.DEL_WHICH_ID)
     note_ = await Note.query.where(
         (Note.context_id == ctx_id) & (Note.id == id_)).gino.first()
     if note_ is None:
-        await session.send_expr(expr.NOTE_DEL_ID_NOT_EXISTS, id=id_)
+        await session.send_expr(expr.DEL_ID_NOT_EXISTS, id=id_)
     else:
         await note_.delete()
-        await session.send_expr(expr.NOTE_DEL_SUCCESS,
+        await session.send_expr(expr.DEL_SUCCESS,
                                 id=id_, content=note_.content)
 
 
@@ -105,7 +105,7 @@ async def _(session: CommandSession):
                     session.current_arg_text.strip(), '现在有哪些呢？')
                 if match_score > 0.70:
                     # we think it matches
-                    await session.send_expr(expr.NOTE_QUERYING_ALL)
+                    await session.send_expr(expr.QUERYING_ALL)
                     # sleep to make conversation natural :)
                     await asyncio.sleep(1)
                     await call_command(
@@ -132,4 +132,4 @@ async def _(session: CommandSession):
         if id_ is not None:
             session.args['id'] = id_
         else:
-            session.pause(render(expr.NOTE_DEL_CANNOT_RECOGNIZE_ID))
+            session.pause(render(expr.DEL_CANNOT_RECOGNIZE_ID))
