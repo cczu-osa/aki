@@ -5,3 +5,5 @@ gino~=0.7
 aiocontextvars~=0.1
 baidu-aip~=2.2
 aiohttp~=3.3
+pandas~=0.23
+pyarrow~=0.9
