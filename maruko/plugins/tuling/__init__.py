@@ -2,7 +2,6 @@ import re
 import asyncio
 import math
 import json
-import hashlib
 from typing import List, Optional, Union, Dict, Collection, Any
 
 import aiohttp
@@ -144,10 +143,13 @@ async def call_tuling_api(
         'perception': {},
         'userInfo': {
             'apiKey': session.bot.config.TULING123_API_KEY,
-            'userId': hashlib.md5(
-                context_id(session.ctx).encode('ascii')).hexdigest()
+            'userId': context_id(session.ctx, use_hash=True)
         }
     }
+
+    group_unique_id = context_id(session.ctx, mode='group', use_hash=True)
+    if group_unique_id:
+        payload['userInfo']['groupId'] = group_unique_id
 
     if image and not isinstance(image, str):
         image = image[0]
