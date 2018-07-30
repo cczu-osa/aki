@@ -2,8 +2,9 @@ import atexit
 import asyncio
 from os import path
 from datetime import datetime
+from typing import Dict, Any
 
-from none import on_natural_language, NLPSession, get_bot
+from none import message_preprocessor, get_bot
 from none.helpers import context_id
 from pandas import DataFrame
 
@@ -16,21 +17,25 @@ _data_frame: DataFrame = None
 _lock = asyncio.Lock()
 
 
-@on_natural_language(only_to_me=False, only_short_message=False)
-async def _(session: NLPSession):
+@message_preprocessor
+async def _(ctx: Dict[str, Any]):
+    data = {
+        'timestamp': [ctx['time']],
+        'ctx_id': [context_id(ctx)],
+        'self_id': [ctx['self_id']],
+        'message': [str(ctx['message'])]
+    }
+    # we don't want to block the processing of message,
+    # so just make sure it will append in the future
+    asyncio.ensure_future(append_message(data))
+
+
+async def append_message(data):
     global _data_frame
     if _data_frame is None:
-        _data_frame = DataFrame({
-            'ctx_id': [context_id(session.ctx)],
-            'self_id': [session.ctx['self_id']],
-            'message': [str(session.msg)]
-        })
+        _data_frame = DataFrame(data)
     else:
-        _data_frame = _data_frame.append({
-            'ctx_id': context_id(session.ctx),
-            'self_id': session.ctx['self_id'],
-            'message': str(session.msg)
-        }, ignore_index=True)
+        _data_frame = _data_frame.append(DataFrame(data), ignore_index=True)
 
     if len(_data_frame.index) >= _bot.config.MESSAGE_DUMP_SINGLE_FILE_MAX_ROWS:
         async with _lock:
