@@ -12,9 +12,9 @@ from maruko import fs, aio
 
 PLUGIN_NAME = 'message_dump'
 
-_bot = get_bot()
-_data_frame: DataFrame = None
-_lock = asyncio.Lock()
+bot = get_bot()
+data_frame: DataFrame = None
+lock = asyncio.Lock()
 
 
 @message_preprocessor
@@ -31,27 +31,27 @@ async def _(ctx: Dict[str, Any]):
 
 
 async def append_message(data):
-    global _data_frame
-    if _data_frame is None:
-        _data_frame = DataFrame(data)
+    global data_frame
+    if data_frame is None:
+        data_frame = DataFrame(data)
     else:
-        _data_frame = _data_frame.append(DataFrame(data), ignore_index=True)
+        data_frame = data_frame.append(DataFrame(data), ignore_index=True)
 
-    if len(_data_frame.index) >= _bot.config.MESSAGE_DUMP_SINGLE_FILE_MAX_ROWS:
-        async with _lock:
+    if len(data_frame.index) >= bot.config.MESSAGE_DUMP_SINGLE_FILE_MAX_ROWS:
+        async with lock:
             # the following line may use I/O for a little bit time,
             # but since we only do it every MESSAGE_DUMP_SINGLE_FILE_MAX_ROWS
             # messages, it's ok to await here
-            await aio.run_sync_func(_data_frame.to_parquet,
+            await aio.run_sync_func(data_frame.to_parquet,
                                     make_filename(),
                                     compression='gzip')
-            _data_frame = None
+            data_frame = None
 
 
 @atexit.register
 def exit_callback():
-    if _data_frame is not None:
-        _data_frame.to_parquet(make_filename(), compression='gzip')
+    if data_frame is not None:
+        data_frame.to_parquet(make_filename(), compression='gzip')
 
 
 def make_filename() -> str:

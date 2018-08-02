@@ -30,9 +30,9 @@ async def sched_add(session: CommandSession):
     parser.add_argument('--name', required=True)
     parser.add_argument('commands', nargs='+')
 
-    args = await _parse_args(session, parser,
-                             argv=session.get_optional('argv'),
-                             help_msg=_sched_add_help)
+    args = await parse_args(session, parser,
+                            argv=session.get_optional('argv'),
+                            help_msg=sched_add_help)
 
     if not re.match(r'[_a-zA-Z][_a-zA-Z0-9]*', args.name):
         await session.send(
@@ -83,16 +83,16 @@ async def sched_add(session: CommandSession):
         return
 
     await session.send(f'计划任务 {args.name} 添加成功')
-    await session.send(_format_job(args.name, job))
+    await session.send(format_job(args.name, job))
 
 
 @sched.command('get')
 async def sched_get(session: CommandSession):
     parser = ArgumentParser()
     parser.add_argument('name')
-    args = await _parse_args(session, parser,
-                             argv=session.get_optional('argv'),
-                             help_msg=_sched_get_help)
+    args = await parse_args(session, parser,
+                            argv=session.get_optional('argv'),
+                            help_msg=sched_get_help)
     job = await scheduler.get_job(scheduler.make_job_id(
         PLUGIN_NAME, context_id(session.ctx), args.name))
     if not job:
@@ -100,7 +100,7 @@ async def sched_get(session: CommandSession):
         return
 
     await session.send('找到计划任务如下')
-    await session.send(_format_job(args.name, job))
+    await session.send(format_job(args.name, job))
 
 
 @sched.command('list')
@@ -113,7 +113,7 @@ async def sched_list(session: CommandSession):
         return
 
     for job in jobs:
-        await session.send(_format_job(job.id[len(job_id_prefix):], job))
+        await session.send(format_job(job.id[len(job_id_prefix):], job))
         await asyncio.sleep(0.8)
     await session.send_expr(f'以上是所有的 {len(jobs)} 个计划任务')
 
@@ -122,9 +122,9 @@ async def sched_list(session: CommandSession):
 async def sched_remove(session: CommandSession):
     parser = ArgumentParser()
     parser.add_argument('name')
-    args = await _parse_args(session, parser,
-                             argv=session.get_optional('argv'),
-                             help_msg=_sched_remove_help)
+    args = await parse_args(session, parser,
+                            argv=session.get_optional('argv'),
+                            help_msg=sched_remove_help)
     ok = await scheduler.remove_job(scheduler.make_job_id(
         PLUGIN_NAME, context_id(session.ctx), args.name))
     if ok:
@@ -141,8 +141,8 @@ async def _(session: CommandSession):
     session.args['argv'] = shlex.split(session.current_arg_text)
 
 
-async def _parse_args(session: CommandSession, parser: ArgumentParser,
-                      argv: Optional[List[str]], help_msg: str) -> Namespace:
+async def parse_args(session: CommandSession, parser: ArgumentParser,
+                     argv: Optional[List[str]], help_msg: str) -> Namespace:
     if not argv:
         await session.send(help_msg)
     else:
@@ -158,7 +158,7 @@ async def _parse_args(session: CommandSession, parser: ArgumentParser,
     session.finish()  # this will stop the command session
 
 
-def _format_job(job_name: str, job: scheduler.Job) -> str:
+def format_job(job_name: str, job: scheduler.Job) -> str:
     commands = scheduler.get_scheduled_commands_from_job(job)
     commands_str = '\n'.join(
         [f'- {cmd.name}，参数：{cmd.current_arg}' for cmd in commands])
@@ -169,7 +169,7 @@ def _format_job(job_name: str, job: scheduler.Job) -> str:
             f'{commands_str}')
 
 
-_sched_add_help = r"""
+sched_add_help = r"""
 使用方法：
     schedule.add [OPTIONS] --name NAME COMMAND [COMMAND ...]
 
@@ -191,7 +191,7 @@ COMMAND：
     要计划执行的命令，如果有空格或特殊字符，需使用引号括起来
 """.strip()
 
-_sched_get_help = r"""
+sched_get_help = r"""
 使用方法：
     schedule.get NAME
 
@@ -199,7 +199,7 @@ NAME：
     计划任务名称
 """.strip()
 
-_sched_remove_help = r"""
+sched_remove_help = r"""
 使用方法：
     schedule.remove NAME
 
