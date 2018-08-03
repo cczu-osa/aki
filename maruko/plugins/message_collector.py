@@ -2,28 +2,27 @@ import atexit
 import asyncio
 from os import path
 from datetime import datetime
-from typing import Dict, Any
 
-from none import message_preprocessor, get_bot
+from none import on_natural_language, NLPSession, get_bot
 from none.helpers import context_id
 from pandas import DataFrame
 
 from maruko import fs, aio
 
-PLUGIN_NAME = 'message_dump'
+PLUGIN_NAME = 'message_collector'
 
 bot = get_bot()
 data_frame: DataFrame = None
 lock = asyncio.Lock()
 
 
-@message_preprocessor
-async def _(ctx: Dict[str, Any]):
+@on_natural_language(only_to_me=False, only_short_message=False)
+async def _(session: NLPSession):
     data = {
-        'timestamp': [ctx['time']],
-        'ctx_id': [context_id(ctx)],
-        'self_id': [ctx['self_id']],
-        'message': [str(ctx['message'])]
+        'timestamp': [session.ctx['time']],
+        'ctx_id': [context_id(session.ctx)],
+        'self_id': [session.ctx['self_id']],
+        'message': [str(session.ctx['message'])]
     }
     # we don't want to block the processing of message,
     # so just make sure it will append in the future
