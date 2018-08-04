@@ -8,6 +8,8 @@ import requests
 from none import get_bot
 
 from maruko import aio
+from maruko.log import logger
+
 from . import baidu_aip, ltp_cloud
 
 
@@ -123,6 +125,7 @@ async def lexer(text: str) -> LexerResult_T:
     ]
 
     f = random.choices(*zip(*lexer_vendors))[0]
+    logger.debug(f'Lexer chosen: {f}')
     return await f(text)
 
 
@@ -334,6 +337,8 @@ async def parse_location(
         location_words = jieba_fast.lcut(location_word)
     else:
         location_words = location_word
+
+    logger.debug(f'Parsing location: {location_words}')
 
     location = Location()
     i = 0
