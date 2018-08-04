@@ -7,3 +7,4 @@ baidu-aip~=2.2
 aiohttp~=3.3
 pandas~=0.23
 fastparquet~=0.1.5
+requests~=2.19

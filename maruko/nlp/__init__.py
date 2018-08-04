@@ -1,12 +1,15 @@
-from typing import List, Tuple
+import random
+from typing import List, Tuple, Dict, Any
 
-from . import baidu_aip
+from . import baidu_aip, ltp_cloud
 
 
 async def sentence_similarity(sentence1: str, sentence2: str) -> float:
     """Basic sentence similarity calculation."""
     if sentence1 == sentence2:
         return 1.00
+    if not sentence1 and sentence2 or not sentence2 and sentence1:
+        return 0.00
     return await baidu_aip.simnet(sentence1, sentence2)
 
 
@@ -32,7 +35,7 @@ class ExampleSentence:
                f'solid={self.solid})>'
 
 
-async def sentence_similarity_adv(
+async def sentence_similarity_ex(
         sentence: str,
         example_sentences: List[ExampleSentence],
         max_example_sentences: int = 6,
@@ -40,7 +43,7 @@ async def sentence_similarity_adv(
         ok_score: float = 0.70,
         great_score: float = 0.80) -> Tuple[float, bool]:
     """
-    Advanced version of sentence similarity calculation.
+    Sentence similarity calculation with extra functions.
 
     :param sentence: sentence to check
     :param example_sentences: example sentences to compare with
@@ -90,3 +93,188 @@ async def sentence_similarity_adv(
             break
 
     return max_score, max_score >= ok_score
+
+
+# List of paragraphs (split by lines), and each paragraph is a list of words
+LexerResult_T = List[List[Dict[str, Any]]]
+
+
+async def lexer(text: str) -> LexerResult_T:
+    """
+    A lexer that segment the input text and do pos tagging and ner on it.
+
+    :param text: the input text (may have multiple paragraphs)
+    :return: the lexical analysis result
+    """
+    text = text.strip()
+    if not text:
+        return []
+
+    lexer_vendors = [
+        (_lexer_baidu_aip, 0.3),
+        (_lexer_ltp_cloud, 0.7),
+    ]
+
+    choice = random.choices(*zip(*lexer_vendors))[0]
+    return await choice(text)
+
+
+async def _lexer_baidu_aip(text: str) -> LexerResult_T:
+    assert text
+
+    baidu_aip_result = await baidu_aip.lexer(text)
+    result = []
+
+    paragraph = []
+    temp_data = {}
+
+    def collect_named_entity_from_temp():
+        paragraph.append({
+            'item': ''.join(temp_data['basic_words']),
+            'basic_words': temp_data['basic_words'],
+            'ne': temp_data['ne_type'],
+            'pos': ''
+        })
+
+    for word in baidu_aip_result:
+        if temp_data.get('in_loc_ne') and word['ne'] != 'LOC':
+            # a LOC named entity ends
+            collect_named_entity_from_temp()
+            temp_data.clear()
+
+        if '\n' in word['item'] and paragraph:
+            result.append(paragraph)
+            paragraph = []
+            continue
+
+        # merge LOC named entity
+        if not temp_data.get('in_loc_ne') and word['ne'] == 'LOC':
+            # a LOC named entity begins
+            temp_data['in_loc_ne'] = True
+            temp_data['basic_words'] = word['basic_words']
+            temp_data['ne_type'] = 'LOC'
+            continue
+        elif temp_data.get('in_loc_ne') and word['ne'] == 'LOC':
+            # in a LOC named entity
+            temp_data['basic_words'].extend(word['basic_words'])
+            continue
+
+        # a normal word
+        paragraph.append({
+            'item': word['item'],
+            'basic_words': word['basic_words'],
+            'ne': word['ne'],
+            'pos': word['pos']
+        })
+
+    if temp_data.get('in_loc_ne'):
+        collect_named_entity_from_temp()
+
+    if paragraph:
+        result.append(paragraph)
+
+    return result
+
+
+async def _lexer_ltp_cloud(text: str) -> LexerResult_T:
+    assert text
+
+    ltp_cloud_result = await ltp_cloud.lexer(text)
+    result = []
+
+    ne_type_map = {
+        'nh': 'PER',
+        'ni': 'ORG',
+        'ns': 'LOC',
+    }
+
+    pos_map = {
+        'b': 'a',
+        'e': 'y',
+        'g': 'x',
+        'nd': 'f',
+        'nh': 'nr',
+        'ni': 'nt',
+        'nl': 's',
+        'nt': 't',
+        'wp': 'w',
+        'ws': 'xf',
+    }
+
+    for paragraph in ltp_cloud_result:
+        paragraph = sum(paragraph, [])
+
+        paragraph_normalized = []
+        temp_data = {}
+
+        def collect_named_entity_from_temp():
+            paragraph_normalized.append({
+                'item': ''.join(temp_data['basic_words']),
+                'basic_words': temp_data['basic_words'],
+                'ne': temp_data['ne_type'],
+                'pos': ''
+            })
+
+        for word in paragraph:
+            if temp_data.get('in_time_ne') and word['pos'] != 'nt':
+                # a TIME named entity ends
+                collect_named_entity_from_temp()
+                temp_data.clear()
+
+            if '-' in word['ne']:
+                # LTP Cloud thought this word is a named entity
+                ne_mark, ne_type = word['ne'].split('-')
+                ne_type = ne_type_map.get(ne_type.lower())
+                if ne_type:
+                    if ne_mark == 'S':
+                        # a single word named entity
+                        paragraph_normalized.append({
+                            'item': word['cont'],
+                            'basic_words': [word['cont']],
+                            'ne': ne_type,
+                            'pos': pos_map.get(word['pos'], word['pos'])
+                        })
+                        temp_data.clear()
+                    elif ne_mark == 'B':
+                        # a multi-words named entity begins
+                        temp_data['basic_words'] = [word['cont']]
+                        temp_data['ne_type'] = ne_type
+                    elif ne_mark == 'I':
+                        temp_data['basic_words'].append(word['cont'])
+                    elif ne_mark == 'E':
+                        # a multi-words named entity ends
+                        temp_data['basic_words'].append(word['cont'])
+                        collect_named_entity_from_temp()
+                        temp_data.clear()
+
+                    # we've handle this word as a named entity,
+                    # continue to next word here
+                    continue
+
+            # recognize TIME named entity
+            if not temp_data.get('in_time_ne') and word['pos'] == 'nt':
+                # a TIME named entity begins
+                temp_data['in_time_ne'] = True
+                temp_data['basic_words'] = [word['cont']]
+                temp_data['ne_type'] = 'TIME'
+                continue
+            elif temp_data.get('in_time_ne') and word['pos'] == 'nt':
+                # in a TIME named entity
+                temp_data['basic_words'].append(word['cont'])
+                continue
+
+            # a normal word
+            paragraph_normalized.append({
+                'item': word['cont'],
+                'basic_words': [word['cont']],
+                'ne': '',
+                'pos': pos_map.get(word['pos'], word['pos'])
+            })
+            temp_data.clear()
+
+        if temp_data.get('in_time_ne'):
+            collect_named_entity_from_temp()
+
+        result.append(paragraph_normalized)
+
+    return result

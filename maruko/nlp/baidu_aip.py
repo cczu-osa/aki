@@ -1,5 +1,7 @@
 """
 Baidu AIP package wrapper.
+
+For API docs, see http://ai.baidu.com/docs#/NLP-API/89828646.
 """
 
 from typing import Optional, List, Dict, Any
