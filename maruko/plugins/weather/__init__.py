@@ -26,11 +26,7 @@ async def weather(session: CommandSession):
             'loc_city',
             prompt=render(expr.WHERE_IN_PROVINCE, province=province))
 
-    if district:
-        final_loc = district + (f',{city}' if city else '')
-    else:
-        # if not district, city must be non-empty
-        final_loc = city + (f',{province}' if province else '')
+    final_loc = district or city
     await session.send(f'位置：{final_loc}')
 
 
