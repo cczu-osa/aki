@@ -36,7 +36,7 @@ async def append_message(data):
     else:
         data_frame = data_frame.append(DataFrame(data), ignore_index=True)
 
-    if len(data_frame.index) >= bot.config.MESSAGE_DUMP_SINGLE_FILE_MAX_ROWS:
+    if len(data_frame.index) >= bot.config.MESSAGE_COLLECTOR_MAX_ROWS_PER_FILE:
         async with lock:
             # the following line may use I/O for a little bit time,
             # but since we only do it every MESSAGE_DUMP_SINGLE_FILE_MAX_ROWS
