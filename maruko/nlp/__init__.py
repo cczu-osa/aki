@@ -308,6 +308,16 @@ class Location:
     district: str = None
     other: str = None
 
+    def __str__(self):
+        s = ''
+        for item in (self.province,
+                     self.city,
+                     self.district,
+                     self.other):
+            if item:
+                s += item
+        return s
+
 
 async def parse_location(
         location_word: Union[str, List[str]]) -> Location:
@@ -332,7 +342,7 @@ async def parse_location(
             # we are done with "省"、"市"、"区／县级市"
             break
 
-        w = location_words[i].strip('省市区')
+        w = location_words[i].strip('省市区县')
         if not w:
             i += 1
             continue
