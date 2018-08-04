@@ -4,6 +4,7 @@ LTP Cloud API wrapper.
 For API docs, see https://www.ltp-cloud.com/document/.
 """
 
+import json
 from typing import List, Dict, Any
 
 import requests
@@ -30,7 +31,7 @@ async def analysis(text: str,
             }
         )
         return await aio.run_sync_func(resp.json)
-    except requests.RequestException:
+    except (requests.RequestException, json.JSONDecodeError):
         return []
 
 

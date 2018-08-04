@@ -8,3 +8,4 @@ aiohttp~=3.3
 pandas~=0.23
 fastparquet~=0.1.5
 requests~=2.19
+jieba-fast~=0.51

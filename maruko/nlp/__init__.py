@@ -1,6 +1,13 @@
+import json
 import random
-from typing import List, Tuple, Dict, Any
+from dataclasses import dataclass
+from typing import List, Tuple, Dict, Any, Union
 
+import jieba_fast
+import requests
+from none import get_bot
+
+from maruko import aio
 from . import baidu_aip, ltp_cloud
 
 
@@ -115,8 +122,8 @@ async def lexer(text: str) -> LexerResult_T:
         (_lexer_ltp_cloud, 0.6),
     ]
 
-    choice = random.choices(*zip(*lexer_vendors))[0]
-    return await choice(text)
+    f = random.choices(*zip(*lexer_vendors))[0]
+    return await f(text)
 
 
 async def _lexer_baidu_aip(text: str) -> LexerResult_T:
@@ -292,3 +299,80 @@ async def _lexer_ltp_cloud(text: str) -> LexerResult_T:
         result.append(paragraph_normalized)
 
     return result
+
+
+@dataclass
+class Location:
+    province: str = None
+    city: str = None
+    district: str = None
+    other: str = None
+
+
+async def parse_location(
+        location_word: Union[str, List[str]]) -> Location:
+    """
+    Parse location like "江苏省南京市浦口区".
+
+    :param location_word: location word (segmented or not)
+    :return: Location object
+    """
+    if not location_word:
+        return Location()
+
+    if isinstance(location_word, str):
+        location_words = jieba_fast.lcut(location_word)
+    else:
+        location_words = location_word
+
+    location = Location()
+    i = 0
+    while i < len(location_words):
+        if all((location.province, location.city, location.district)):
+            # we are done with "省"、"市"、"区／县级市"
+            break
+
+        w = location_words[i].strip('省市区')
+        if not w:
+            i += 1
+            continue
+
+        try:
+            # use HeWeather's API
+            # TODO: 对 location 加缓存
+            resp = await aio.run_sync_func(
+                requests.get, 'https://search.heweather.com/find',
+                params={
+                    'location': w,
+                    'key': get_bot().config.HEWEATHER_KEY,
+                    'group': 'cn',
+                })
+            result = (await aio.run_sync_func(
+                resp.json)).get('HeWeather6', [])[0]
+        except (requests.RequestException, json.JSONDecodeError,
+                AttributeError, IndexError):
+            i += 1
+            continue
+
+        if result.get('status') != 'ok':
+            i += 1
+            continue
+
+        # status is ok here, so there is at lease one location info
+        basic = result.get('basic')[0]
+        parsed = False
+        if w == basic.get('admin_area'):
+            location.province = w
+            parsed = True
+        if w == basic.get('parent_city'):
+            # don't check parsed here, because we may encounter "北京",
+            # of which city and province are the same
+            location.city = w
+            parsed = True
+        if not parsed and w == basic.get('location'):
+            location.district = w
+
+        i += 1  # head on to the next
+
+    location.other = ''.join(location_words[i:]) or None
+    return location
