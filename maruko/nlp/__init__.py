@@ -101,7 +101,7 @@ LexerResult_T = List[List[Dict[str, Any]]]
 
 async def lexer(text: str) -> LexerResult_T:
     """
-    A lexer that segment the input text and do pos tagging and ner on it.
+    A lexer that segment the input text and do POS tagging and NER on it.
 
     :param text: the input text (may have multiple paragraphs)
     :return: the lexical analysis result
@@ -111,8 +111,8 @@ async def lexer(text: str) -> LexerResult_T:
         return []
 
     lexer_vendors = [
-        (_lexer_baidu_aip, 0.3),
-        (_lexer_ltp_cloud, 0.7),
+        (_lexer_baidu_aip, 0.4),
+        (_lexer_ltp_cloud, 0.6),
     ]
 
     choice = random.choices(*zip(*lexer_vendors))[0]
@@ -216,7 +216,8 @@ async def _lexer_ltp_cloud(text: str) -> LexerResult_T:
             })
 
         for word in paragraph:
-            if temp_data.get('in_time_ne') and word['pos'] != 'nt':
+            if temp_data.get('in_ne') and temp_data['ne_type'] == 'TIME' and \
+                    word['pos'] != 'nt':
                 # a TIME named entity ends
                 collect_named_entity_from_temp()
                 temp_data.clear()
@@ -237,10 +238,13 @@ async def _lexer_ltp_cloud(text: str) -> LexerResult_T:
                         temp_data.clear()
                     elif ne_mark == 'B':
                         # a multi-words named entity begins
+                        temp_data['in_ne'] = True
                         temp_data['basic_words'] = [word['cont']]
                         temp_data['ne_type'] = ne_type
+                        temp_data['last_pos'] = word['pos']
                     elif ne_mark == 'I':
                         temp_data['basic_words'].append(word['cont'])
+                        temp_data['last_pos'] = word['pos']
                     elif ne_mark == 'E':
                         # a multi-words named entity ends
                         temp_data['basic_words'].append(word['cont'])
@@ -252,15 +256,19 @@ async def _lexer_ltp_cloud(text: str) -> LexerResult_T:
                     continue
 
             # recognize TIME named entity
-            if not temp_data.get('in_time_ne') and word['pos'] == 'nt':
+            if not temp_data.get('in_ne') and word['pos'] == 'nt':
                 # a TIME named entity begins
-                temp_data['in_time_ne'] = True
+                temp_data['in_ne'] = True
                 temp_data['basic_words'] = [word['cont']]
                 temp_data['ne_type'] = 'TIME'
+                temp_data['last_pos'] = word['pos']
                 continue
-            elif temp_data.get('in_time_ne') and word['pos'] == 'nt':
+            elif temp_data.get('in_ne') and \
+                    temp_data['ne_type'] == 'TIME' and \
+                    word['pos'] == 'nt':
                 # in a TIME named entity
                 temp_data['basic_words'].append(word['cont'])
+                temp_data['last_pos'] = word['pos']
                 continue
 
             # a normal word
@@ -272,7 +280,13 @@ async def _lexer_ltp_cloud(text: str) -> LexerResult_T:
             })
             temp_data.clear()
 
-        if temp_data.get('in_time_ne'):
+        if temp_data.get('in_ne'):
+            if temp_data['ne_type'] == 'ORG' and \
+                    temp_data.get('last_pos') == 'ns':
+                # this may be a bug of LTP Cloud
+                # '南京' will be recognized as B-Ni (beginning of ORG),
+                # we fix it here, but may introduce other bugs
+                temp_data['ne_type'] = 'LOC'
             collect_named_entity_from_temp()
 
         result.append(paragraph_normalized)

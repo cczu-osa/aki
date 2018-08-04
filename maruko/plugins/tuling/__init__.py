@@ -65,11 +65,9 @@ async def tuling(session: CommandSession):
         # for simplification, we only recognize named entities,
         # and since we will also check the user's input later,
         # here we can allow some ambiguity.
-        loc_keywords = ('哪里', '哪儿', re.compile(r'哪\S城市'), '位置')
-        time_keywords = ('什么时候',)
         ne_type = tuling_ne_type(replies, {
-            'LOC': loc_keywords,
-            'TIME': time_keywords,
+            'LOC': ('哪里', '哪儿', re.compile(r'哪\S城市'), '位置'),
+            'TIME': ('什么时候',),
         })
         if ne_type:
             logger.debug(f'One time call, '
@@ -100,7 +98,9 @@ async def _(session: NLPSession):
     ctx_id = context_id(session.ctx)
     if ctx_id in tuling_sessions:
         ne_type = tuling_sessions[ctx_id]
-        words = await nlp.baidu_aip.lexer(session.msg_text)
+        lex_result = await nlp.lexer(session.msg_text)
+        # we only mind the first paragraph
+        words = lex_result[0] if lex_result else []
         for w in words:
             if ne_type == w['ne']:
                 # if there is a tuling session existing,
