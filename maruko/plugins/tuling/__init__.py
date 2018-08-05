@@ -4,7 +4,6 @@ import math
 import json
 from typing import List, Optional, Union, Dict, Collection, Any
 
-import aiohttp
 from aiocqhttp.message import Message, escape
 from none import on_command, CommandSession
 from none import on_natural_language, NLPSession, NLPResult
@@ -13,6 +12,7 @@ from none.expression import render
 from none.helpers import context_id
 
 from maruko import nlp
+from maruko.aio import requests
 from maruko.log import logger
 
 from . import expressions as expr
@@ -164,16 +164,16 @@ async def call_tuling_api(
         return []
 
     try:
-        async with aiohttp.request('POST', url, json=payload) as resp:
-            if 200 <= resp.status < 300:
-                resp_payload = json.loads(await resp.text())
-                if resp_payload.get('results'):
-                    return_list = []
-                    for result in resp_payload['results']:
-                        res_type = result.get('resultType')
-                        if res_type in ('text', 'url'):
-                            return_list.append(result['values'][res_type])
-                    return return_list
-            return []
-    except aiohttp.ClientError:
+        resp = await requests.post(url, json=payload)
+        if resp.ok:
+            resp_payload = await resp.json()
+            if resp_payload.get('results'):
+                return_list = []
+                for result in resp_payload['results']:
+                    res_type = result.get('resultType')
+                    if res_type in ('text', 'url'):
+                        return_list.append(result['values'][res_type])
+                return return_list
+        return []
+    except (requests.RequestException, json.JSONDecodeError, KeyError):
         return []

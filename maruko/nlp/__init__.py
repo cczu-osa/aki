@@ -4,10 +4,9 @@ from dataclasses import dataclass
 from typing import List, Tuple, Dict, Any, Union
 
 import jieba_fast
-import requests
 from none import get_bot
 
-from maruko import aio
+from maruko.aio import requests
 from maruko.log import logger
 
 from . import baidu_aip, ltp_cloud
@@ -355,15 +354,16 @@ async def parse_location(
         try:
             # use HeWeather's API
             # TODO: 对 location 加缓存
-            resp = await aio.run_sync_func(
-                requests.get, 'https://search.heweather.com/find',
+            resp = await requests.get(
+                'https://search.heweather.com/find',
                 params={
                     'location': w,
                     'key': get_bot().config.HEWEATHER_KEY,
                     'group': 'cn',
-                })
-            result = (await aio.run_sync_func(
-                resp.json)).get('HeWeather6', [])[0]
+                }
+            )
+            resp.raw_response.raise_for_status()
+            result = (await resp.json()).get('HeWeather6', [])[0]
         except (requests.RequestException, json.JSONDecodeError,
                 AttributeError, IndexError):
             i += 1
