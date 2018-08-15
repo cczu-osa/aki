@@ -1,9 +1,12 @@
+import os
+
 from none.default_config import *
 
-COMMAND_START.add('')
 NICKNAME = {'小丸子', 'Maruko'}
-DATA_FOLDER = os.path.join(os.path.dirname(__file__), 'data')
+COMMAND_START.add('')
 SESSION_CANCELLATION_EXPRESSION = ('好的',)
+
+DATA_FOLDER = os.path.join(os.path.dirname(__file__), 'data')
 
 DATABASE_URL = ''
 
