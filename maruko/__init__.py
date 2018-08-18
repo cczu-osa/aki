@@ -3,13 +3,12 @@ from os import path
 from typing import Any
 
 import none
-from quart import Quart
 
 from . import db, scheduler
 from .log import logger
 
 
-def init(config_object: Any) -> Quart:
+def init(config_object: Any) -> none.NoneBot:
     none.init(config_object)
     bot = none.get_bot()
 
@@ -25,4 +24,4 @@ def init(config_object: Any) -> Quart:
                       'maruko.plugins')
     db.create_all()
 
-    return bot.asgi
+    return bot

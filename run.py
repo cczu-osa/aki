@@ -34,8 +34,8 @@ def main():
         exit(1)
 
     import maruko
-    app = maruko.init(config)
-    app.run(host=config.HOST, port=config.PORT)
+    bot = maruko.init(config)
+    bot.run()
 
 
 if __name__ == '__main__':
