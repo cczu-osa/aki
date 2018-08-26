@@ -16,6 +16,8 @@ data_frame: DataFrame = None
 lock = asyncio.Lock()
 
 
+# TODO: 应该按小时来写入文件
+
 @on_natural_language(only_to_me=False, only_short_message=False)
 async def _(session: NLPSession):
     data = {

@@ -2,7 +2,6 @@ import os
 import sys
 
 
-# noinspection PyUnresolvedReferences
 def main():
     deployment_env = os.getenv('DEPLOYMENT_ENV', 'dev').lower()
 
