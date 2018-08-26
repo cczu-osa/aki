@@ -1,17 +1,12 @@
 import re
 from typing import Dict, Any, Union, List, Tuple
 
+import none
 from apscheduler.job import Job
 from apscheduler.jobstores.base import ConflictingIdError, JobLookupError
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from none import get_bot
 from none.command import call_command
 
-from . import db, aio
-from .log import logger
-
-_scheduler: AsyncIOScheduler = None
+from . import aio
 
 
 def make_job_id(plugin_name: str, ctx_id: str,
@@ -30,37 +25,6 @@ def make_job_id(plugin_name: str, ctx_id: str,
             raise ValueError(r'job name should match "[_a-zA-Z][_a-zA-Z0-9]*"')
         job_id += f'{job_name}'
     return job_id
-
-
-def init() -> None:
-    """
-    Initialize scheduler module.
-
-    This must be called before any plugins using database,
-    and after initializing "none" module.
-    """
-    logger.debug('Initializing scheduler')
-
-    global _scheduler
-    _scheduler = AsyncIOScheduler(
-        jobstores={
-            'default': SQLAlchemyJobStore(
-                url=get_bot().config.DATABASE_URL,
-                tablename=db.make_table_name('core', 'apscheduler_jobs')
-            )
-        },
-        timezone='Asia/Shanghai'
-    )
-
-    if not _scheduler.running:
-        _scheduler.start()
-
-
-def get_scheduler() -> AsyncIOScheduler:
-    """
-    Get the internal APScheduler scheduler instance.
-    """
-    return _scheduler
 
 
 class ScheduledCommand:
@@ -114,11 +78,10 @@ async def add_scheduled_commands(
     """
     commands = [commands] \
         if isinstance(commands, ScheduledCommand) else commands
-    scheduler = get_scheduler()
 
     try:
         return await aio.run_sync_func(
-            scheduler.add_job,
+            none.scheduler.add_job,
             _scheduled_commands_callback,
             id=job_id,
             trigger=trigger, **trigger_args,
@@ -134,7 +97,7 @@ async def _scheduled_commands_callback(
         ctx: Dict[str, Any],
         commands: List[ScheduledCommand]) -> None:
     # get the current bot, we may not in the original running environment now
-    bot = get_bot()
+    bot = none.get_bot()
     for cmd in commands:
         await call_command(bot, ctx, cmd.name, current_arg=cmd.current_arg,
                            check_perm=True, disable_interaction=True)
@@ -142,14 +105,12 @@ async def _scheduled_commands_callback(
 
 async def get_job(job_id: str) -> Job:
     """Get a scheduler job by id."""
-    scheduler = get_scheduler()
-    return await aio.run_sync_func(scheduler.get_job, job_id)
+    return await aio.run_sync_func(none.scheduler.get_job, job_id)
 
 
 async def get_jobs(job_id_prefix: str) -> List[Job]:
     """Get all scheduler jobs with given id prefix."""
-    scheduler = get_scheduler()
-    all_jobs = await aio.run_sync_func(scheduler.get_jobs)
+    all_jobs = await aio.run_sync_func(none.scheduler.get_jobs)
     return list(filter(
         lambda j: j.id.rsplit('/', maxsplit=1)[0] == job_id_prefix.rstrip('/'),
         all_jobs
@@ -158,9 +119,8 @@ async def get_jobs(job_id_prefix: str) -> List[Job]:
 
 async def remove_job(job_id: str) -> bool:
     """Remove a scheduler job by id."""
-    scheduler = get_scheduler()
     try:
-        await aio.run_sync_func(scheduler.remove_job, job_id)
+        await aio.run_sync_func(none.scheduler.remove_job, job_id)
         return True
     except JobLookupError:
         return False
