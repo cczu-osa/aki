@@ -17,16 +17,12 @@ async def weather(session: CommandSession):
     location = session.get('location', prompt_expr=expr.WHERE)
     # time = session.get_optional('time')
 
-    province = location.province or session.get_optional('loc_province')
-    city = location.city or session.get_optional('loc_city')
-    district = location.district or session.get_optional('loc_district')
+    if location.province and not location.city and not location.district:
+        # there is no city or district, ask the user for more info!
+        session.get('location_more', prompt=render(expr.WHERE_IN_PROVINCE,
+                                                   province=location.province))
 
-    if province and not city and not district:
-        city = session.get(
-            'loc_city',
-            prompt=render(expr.WHERE_IN_PROVINCE, province=province))
-
-    final_loc = district or city
+    final_loc = location.heweather_format()
     await session.send(f'位置：{final_loc}')
 
 
@@ -45,7 +41,7 @@ async def _(session: CommandSession):
         location = await nlp.parse_location(striped_text_arg)
         if any((location.province, location.city, location.district)):
             session.args['location'] = location
-    elif session.current_key.startswith('loc_'):
+    elif session.current_key == 'location_more':
         patched_loc = await nlp.parse_location(striped_text_arg)
         location: nlp.Location = session.args.get('location')
         assert location
@@ -85,13 +81,12 @@ async def _(session: NLPSession):
     confidence += len(args) * 10.0 / 2.0 + 10.0 if args else 0.0
     return NLPResult(min(confidence, 100.0), ('weather', 'weather'), args)
 
-
-@on_natural_language({'雨', '雪', '晴', '阴', '冰雹', '雾'})
-async def _(session: NLPSession):
-    text = session.msg_text.strip()
-    from pprint import pprint
-    pprint(await nlp.lexer(text))
-
-    # if not ('?' in session.msg_text or '？' in session.msg_text):
-    #     return None
-    # return NLPResult(90.0, ('weather', 'weather'), {})
+# @on_natural_language({'雨', '雪', '晴', '阴', '冰雹', '雾'})
+# async def _(session: NLPSession):
+#     text = session.msg_text.strip()
+#     from pprint import pprint
+#     pprint(await nlp.lexer(text))
+#
+#     # if not ('?' in session.msg_text or '？' in session.msg_text):
+#     #     return None
+#     # return NLPResult(90.0, ('weather', 'weather'), {})

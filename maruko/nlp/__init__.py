@@ -1,17 +1,16 @@
-import json
 import random
 from dataclasses import dataclass
 from typing import List, Tuple, Dict, Any, Union
 
 import jieba_fast
-from none import get_bot
 
-from maruko.aio import requests
+from maruko.cache import cached
 from maruko.log import logger
-
+from maruko.api_vendors import heweather
 from . import baidu_aip, ltp_cloud
 
 
+@cached()
 async def sentence_similarity(sentence1: str, sentence2: str) -> float:
     """Basic sentence similarity calculation."""
     if sentence1 == sentence2:
@@ -107,6 +106,7 @@ async def sentence_similarity_ex(
 LexerResult_T = List[List[Dict[str, Any]]]
 
 
+@cached()
 async def lexer(text: str) -> LexerResult_T:
     """
     A lexer that segment the input text and do POS tagging and NER on it.
@@ -120,7 +120,7 @@ async def lexer(text: str) -> LexerResult_T:
 
     lexer_vendors = [
         (_lexer_baidu_aip, 0.4),
-        (_lexer_ltp_cloud, 0.6),
+        # (_lexer_ltp_cloud, 0.6),
     ]
 
     f = random.choices(*zip(*lexer_vendors))[0]
@@ -320,7 +320,33 @@ class Location:
                 s += item
         return s
 
+    def heweather_format(self) -> str:
+        """
+        Format the location to fit HeWeather's API.
+        """
+        loc = ''
+        if self.district:
+            loc += self.district
+        if self.city:
+            loc += f',{self.city}'
+            if self.province:
+                loc += f',{self.province}'
+        return loc.lstrip(',')
 
+    def short_format(self) -> str:
+        """
+        Short location format without detail location.
+        """
+        s = ''
+        for item in (self.province,
+                     self.city,
+                     self.district):
+            if item:
+                s += item
+        return s
+
+
+@cached()
 async def parse_location(
         location_word: Union[str, List[str]]) -> Location:
     """
@@ -351,25 +377,8 @@ async def parse_location(
             i += 1
             continue
 
-        try:
-            # use HeWeather's API
-            # TODO: 对 location 加缓存
-            resp = await requests.get(
-                'https://search.heweather.com/find',
-                params={
-                    'location': w,
-                    'key': get_bot().config.HEWEATHER_KEY,
-                    'group': 'cn',
-                }
-            )
-            resp.raw_response.raise_for_status()
-            result = (await resp.json()).get('HeWeather6', [])[0]
-        except (requests.RequestException, json.JSONDecodeError,
-                AttributeError, IndexError):
-            i += 1
-            continue
-
-        if result.get('status') != 'ok':
+        result = await heweather.find(w)
+        if not result or result.get('status') != 'ok':
             i += 1
             continue
 

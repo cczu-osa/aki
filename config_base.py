@@ -19,3 +19,10 @@ LTP_CLOUD_API_KEY = ''
 TULING123_API_KEY = ''
 
 MESSAGE_COLLECTOR_DUMP_FREQ = 'H'
+
+AIOCACHE_DEFAULT_CONFIG = {
+    'cache': 'aiocache.SimpleMemoryCache',
+    'serializer': {
+        'class': 'aiocache.serializers.PickleSerializer'
+    }
+}

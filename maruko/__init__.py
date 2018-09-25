@@ -4,7 +4,7 @@ from typing import Any
 
 import none
 
-from . import db, scheduler
+from . import cache, db, scheduler
 from .log import logger
 
 
@@ -30,6 +30,8 @@ def init(config_object: Any) -> none.NoneBot:
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
+
+    cache.init()
 
     db.init()
     none.load_builtin_plugins()

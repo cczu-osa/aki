@@ -9,3 +9,4 @@ fastparquet~=0.1.5
 requests~=2.19
 jieba-fast~=0.51
 pytz~=2018.5
+aiocache~=0.10
