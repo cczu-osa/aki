@@ -3,8 +3,9 @@ import os
 from none.default_config import *
 
 NICKNAME = {'小丸子', 'Maruko'}
-COMMAND_START.add('')
-SESSION_CANCELLATION_EXPRESSION = ('好的',)
+COMMAND_START = list(COMMAND_START) + ['']
+SESSION_CANCEL_EXPRESSION = ('好的',)
+# SESSION_RUN_TIMEOUT = timedelta(seconds=10)
 
 DATA_FOLDER = os.path.join(os.path.dirname(__file__), 'data')
 

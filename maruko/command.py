@@ -76,7 +76,7 @@ async def handle_cancellation(session: CommandSession) -> None:
     if should_cancel:
         if not new_ctx_message:
             session.finish(
-                render(session.bot.config.SESSION_CANCELLATION_EXPRESSION))
+                render(session.bot.config.SESSION_CANCEL_EXPRESSION))
         else:
             session.switch(new_ctx_message)
 
