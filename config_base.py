@@ -2,8 +2,9 @@ from os import path
 
 from none.default_config import *
 
-NICKNAME = {'奶茶'}
-COMMAND_START = list(COMMAND_START) + ['']
+NICKNAME = ['奶茶', '小奶茶']
+COMMAND_START = {'', '/', '!', '／', '！'}
+COMMAND_SEP = {'/', '.'}
 SESSION_CANCEL_EXPRESSION = ('好的',)
 SESSION_RUN_TIMEOUT = timedelta(seconds=10)
 
