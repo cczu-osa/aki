@@ -1,14 +1,15 @@
-import atexit
 import asyncio
-from os import path
+import atexit
 from datetime import datetime
+from os import path
+import signal
 from typing import Optional
 
 from none import on_natural_language, NLPSession, get_bot
 from none.helpers import context_id
 from pandas import DataFrame, read_parquet
 
-from maruko import fs, aio, dt
+from amadeus import fs, aio, dt
 
 PLUGIN_NAME = 'message_collector'
 
@@ -48,14 +49,7 @@ async def append_message(data) -> None:
         last_collect_dt = curr_dt
 
 
-@atexit.register
-def exit_callback():
-    if data_frame is not None:
-        dump(last_collect_dt or
-             dt.beijing_now(bot.config.MESSAGE_COLLECTOR_DUMP_FREQ))
-
-
-def load(dt_: datetime) -> Optional[datetime]:
+def load(dt_: datetime) -> Optional[DataFrame]:
     filename = make_filename(dt_)
     if path.isfile(filename):
         return read_parquet(filename)
@@ -70,6 +64,14 @@ def make_filename(dt_: datetime) -> str:
                      dt_.strftime('%Y%m%d%H%M%S.parquet'))
 
 
+def finalize():
+    global data_frame
+    if data_frame is not None:
+        dump(last_collect_dt or
+             dt.beijing_now(bot.config.MESSAGE_COLLECTOR_DUMP_FREQ))
+        data_frame = None
+
+
 def init():
     # initial load
     global data_frame, last_collect_dt
@@ -78,6 +80,11 @@ def init():
         data_frame = load(curr_dt)
         if data_frame is not None:
             last_collect_dt = curr_dt
+
+    atexit.register(finalize)
+    signal.signal(signal.SIGINT, finalize)
+    signal.signal(signal.SIGBREAK, finalize)
+    signal.signal(signal.SIGTERM, finalize)
 
 
 init()

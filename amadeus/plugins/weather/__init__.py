@@ -4,8 +4,8 @@ from none import CommandSession, CommandGroup
 from none import on_natural_language, NLPSession, NLPResult
 from none.expression import render
 
-from maruko import nlp
-from maruko.command import allow_cancellation
+from amadeus import nlp
+from amadeus.command import allow_cancellation
 
 from . import expressions as expr
 

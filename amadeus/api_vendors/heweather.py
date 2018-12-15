@@ -3,8 +3,8 @@ from typing import Any, Optional, Dict
 
 from none import get_bot
 
-from maruko.aio import requests
-from maruko.cache import cached
+from amadeus.aio import requests
+from amadeus.cache import cached
 
 
 @cached()

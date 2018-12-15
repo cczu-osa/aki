@@ -8,8 +8,8 @@ from none.argparse import ArgumentParser, ParserExit, Namespace
 from none.command import parse_command
 from none.helpers import context_id
 
-from maruko import scheduler
-from maruko.scheduler import ScheduledCommand
+from amadeus import scheduler
+from amadeus.scheduler import ScheduledCommand
 
 PLUGIN_NAME = 'schedule'
 

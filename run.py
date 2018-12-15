@@ -32,8 +32,8 @@ def main():
         print('There is no configuration file!', file=sys.stderr)
         exit(1)
 
-    import maruko
-    bot = maruko.init(config)
+    import amadeus
+    bot = amadeus.init(config)
     bot.run()
 
 

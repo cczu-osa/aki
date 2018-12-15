@@ -11,9 +11,9 @@ from none.session import BaseSession
 from none.expression import render
 from none.helpers import context_id
 
-from maruko import nlp
-from maruko.aio import requests
-from maruko.log import logger
+from amadeus import nlp
+from amadeus.aio import requests
+from amadeus.log import logger
 
 from . import expressions as expr
 

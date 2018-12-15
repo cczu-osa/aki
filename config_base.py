@@ -1,13 +1,13 @@
-import os
+from os import path
 
 from none.default_config import *
 
-NICKNAME = {'小丸子', 'Maruko'}
+NICKNAME = {'奶茶'}
 COMMAND_START = list(COMMAND_START) + ['']
 SESSION_CANCEL_EXPRESSION = ('好的',)
-# SESSION_RUN_TIMEOUT = timedelta(seconds=10)
+SESSION_RUN_TIMEOUT = timedelta(seconds=10)
 
-DATA_FOLDER = os.path.join(os.path.dirname(__file__), 'data')
+DATA_FOLDER = path.join(path.dirname(__file__), 'data')
 
 DATABASE_URL = ''
 

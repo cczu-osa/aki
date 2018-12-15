@@ -9,7 +9,7 @@ from typing import Optional, List, Dict, Any
 from aip import AipNlp
 from none import get_bot
 
-from maruko import aio
+from amadeus import aio
 
 _nlp: Optional[AipNlp] = None
 

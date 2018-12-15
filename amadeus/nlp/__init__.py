@@ -4,9 +4,9 @@ from typing import List, Tuple, Dict, Any, Union
 
 import jieba_fast
 
-from maruko.cache import cached
-from maruko.log import logger
-from maruko.api_vendors import heweather
+from amadeus.cache import cached
+from amadeus.log import logger
+from amadeus.api_vendors import heweather
 from . import baidu_aip, ltp_cloud
 
 

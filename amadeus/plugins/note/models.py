@@ -1,4 +1,4 @@
-from maruko.db import make_table_name, db
+from amadeus.db import make_table_name, db
 
 
 class Note(db.Model):

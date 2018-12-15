@@ -9,7 +9,7 @@ from typing import List, Dict, Any
 
 from none import get_bot
 
-from maruko.aio import requests
+from amadeus.aio import requests
 
 LTPCloudResult_T = List[List[List[Dict[str, Any]]]]
 

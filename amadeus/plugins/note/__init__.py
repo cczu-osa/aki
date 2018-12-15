@@ -14,9 +14,9 @@ from none.command import call_command
 from none.helpers import context_id
 from none.expression import render
 
-from maruko import nlp
-from maruko.db import db
-from maruko.command import allow_cancellation
+from amadeus import nlp
+from amadeus.db import db
+from amadeus.command import allow_cancellation
 
 from . import expressions as expr
 from .models import Note

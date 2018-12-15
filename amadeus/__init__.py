@@ -36,7 +36,7 @@ def init(config_object: Any) -> none.NoneBot:
     db.init()
     none.load_builtin_plugins()
     none.load_plugins(path.join(path.dirname(__file__), 'plugins'),
-                      'maruko.plugins')
+                      'amadeus.plugins')
     db.create_all()
 
     return bot
