@@ -1,3 +1,4 @@
+aiocqhttp>=0.6.6
 none-bot>=0.4.2
 apscheduler~=3.5
 psycopg2~=2.7
