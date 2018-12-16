@@ -12,3 +12,7 @@ def beijing_now(freq: Optional[str] = None) -> datetime:
     if freq is not None:
         now = Timestamp(now).round(freq)
     return now
+
+
+def beijing_from_timestamp(timestamp: int) -> datetime:
+    return datetime.fromtimestamp(timestamp, pytz.timezone(CST_TIMEZONE))

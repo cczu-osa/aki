@@ -1,5 +1,5 @@
-import re
 import functools
+import re
 from typing import Callable, Any
 
 from none import CommandSession
