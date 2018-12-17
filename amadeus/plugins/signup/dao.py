@@ -39,6 +39,15 @@ async def end_event(event: Event) -> bool:
         return False
 
 
+async def bind_event_with_qq_group(event: Event, qq_group_number: int) -> bool:
+    try:
+        await event.update(qq_group_number=qq_group_number).apply()
+        return True
+    except Exception as e:
+        logger.exception(e)
+        return False
+
+
 async def get_all_events(ctx: Context_T) -> List[Event]:
     try:
         return await Event.query.where(

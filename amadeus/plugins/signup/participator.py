@@ -1,9 +1,11 @@
 import re
 
-from none import CommandSession
+from none import CommandSession, on_request, RequestSession
 
 from amadeus.command import allow_cancellation
+from amadeus.db import db
 from . import dao, cg
+from .models import Event, Signup
 
 
 @cg.command('signup', aliases=['报名'])
@@ -67,7 +69,11 @@ async def signup_signup(session: CommandSession):
         else:
             await session.send('报名失败，请稍后重试～')
     else:
-        await session.send('报名成功啦！')
+        msg = '恭喜你报名成功啦！'
+        if event.qq_group_number:
+            msg += f'请加入此活动官方群 {event.qq_group_number} ' \
+                f'及时获取活动通知哦（申请将自动通过）～'
+        await session.send(msg)
 
 
 @signup_signup.args_parser
@@ -85,3 +91,21 @@ async def _(session: CommandSession):
         await session.pause('请发送正确的内容哦')
 
     session.args[session.current_key] = stripped_arg
+
+
+@on_request('group.add')
+async def _(session: RequestSession):
+    group_id = session.ctx['group_id']
+    user_id = session.ctx['user_id']
+
+    count = await db.select([db.func.count(Signup.id)]).where(
+        (Signup.event_id == Event.id) &
+        (Signup.qq_number == user_id) &
+        (Event.qq_group_number == group_id)
+    ).gino.scalar()
+
+    if count > 0:
+        # the user has signed up
+        await session.approve()
+    else:
+        await session.reject('请先报名才能加群哦')

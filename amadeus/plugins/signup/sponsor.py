@@ -1,6 +1,7 @@
 import io
 
-from none import CommandSession
+from none import CommandSession, CQHttpError
+import none.permission as perm
 
 from amadeus import dt
 from amadeus.aio import requests
@@ -8,7 +9,7 @@ from amadeus.command import allow_cancellation
 from . import dao, cg
 
 
-@cg.command('start', aliases=['发起报名', '发起活动报名'])
+@cg.command('start', aliases=['发起报名'])
 @allow_cancellation
 async def signup_start(session: CommandSession):
     title = session.get('title', prompt='你想发起报名的活动名称是？')
@@ -21,7 +22,7 @@ async def signup_start(session: CommandSession):
                            f'\n即：')
         await session.send(f'报名 {event.code}')
     else:
-        await session.send(f'发起活动报名失败，请稍后重试～')
+        await session.send(f'发起活动报名失败，请稍后再试')
 
 
 @signup_start.args_parser
@@ -91,7 +92,8 @@ async def _(session: CommandSession):
             session.args['fields'] = fields
 
 
-@cg.command('show', aliases=['查看报名', '查看活动报名'])
+@cg.command('show', aliases=['查看报名'])
+@allow_cancellation
 async def signup_show(session: CommandSession):
     code = session.get_optional('code')
     if code:
@@ -103,6 +105,7 @@ async def signup_show(session: CommandSession):
         if event.context_id != dao.ctx_id_by_user(session.ctx):
             await session.finish(f'此活动不是由你发起的哦，无法查看报名信息')
 
+        qq_group = event.qq_group_number or '未绑定'
         start_date = dt.beijing_from_timestamp(
             event.start_time).strftime('%Y-%m-%d')
         end_date = dt.beijing_from_timestamp(
@@ -112,6 +115,7 @@ async def signup_show(session: CommandSession):
             signup_count = '查询失败'
         info = f'活动名称：{event.title}\n' \
             f'活动码：{event.code}\n' \
+            f'活动官方群：{qq_group}\n' \
             f'报名开始日期：{start_date}\n' \
             f'报名结束日期：{end_date}\n' \
             f'报名人数：{signup_count}'
@@ -146,6 +150,7 @@ export_locks = {}
 
 
 @cg.command('export', aliases=['导出报名', '导出报名信息', '导出报名表'])
+@allow_cancellation
 async def signup_export(session: CommandSession):
     code = session.get('code', prompt='你要导出报名信息的活动码是？')
     event = await dao.get_event(code)
@@ -159,8 +164,9 @@ async def signup_export(session: CommandSession):
     await session.send(f'共有 {len(signups)} 条报名信息，'
                        f'正在上传到文件发送服务，请稍等……')
 
-    csv_content = ','.join([f['name'] for f in event.fields]) + '\n'
-    csv_content += '\n'.join(','.join(s.field_values) for s in signups)
+    csv_content = ','.join([f['name'] for f in event.fields] + ['QQ']) + '\n'
+    csv_content += '\n'.join(','.join(s.field_values + [str(s.qq_number)])
+                             for s in signups)
     csv_file = io.BytesIO(csv_content.encode('utf-8'))
     resp = await requests.post(
         'http://tmp.link/openapi/v1',
@@ -175,7 +181,8 @@ async def signup_export(session: CommandSession):
         await session.send(f'上传成功，链接：{payload["data"]["url"]}')
 
 
-@cg.command('end', aliases=['结束报名', '结束活动报名'])
+@cg.command('end', aliases=['结束报名'])
+@allow_cancellation
 async def signup_end(session: CommandSession):
     code = session.get('code', prompt='你要结束报名的活动码是？')
     event = await dao.get_event(code)
@@ -188,15 +195,54 @@ async def signup_end(session: CommandSession):
     if await dao.end_event(event):
         await session.send('结束报名成功')
     else:
-        await session.send('结束报名失败')
+        await session.send('结束报名失败，请稍后再试')
+
+
+@cg.command('bind_group', aliases=['绑定报名'], permission=perm.GROUP_ADMIN)
+@allow_cancellation
+async def signup_bind_group(session: CommandSession):
+    code = session.get('code', prompt='你要绑定到本群的活动码是？')
+    event = await dao.get_event(code)
+    if not event:
+        await session.finish(f'没有找到你输入的活动码对应的活动哦')
+
+    if event.context_id != dao.ctx_id_by_user(session.ctx):
+        await session.finish(f'此活动不是由你发起的哦，无法绑定报名')
+
+    group_id = session.ctx.get('group_id')
+    if not group_id:
+        # superuser may accidentally call this command, should skip
+        await session.finish('当前聊天不是群聊，无法绑定报名')
+
+    try:
+        # check my sole in the current group
+        role = (await session.bot.get_group_member_info(
+            group_id=group_id,
+            user_id=session.ctx['self_id']
+        ))['role']
+    except CQHttpError:
+        role = None
+
+    if role not in ['admin', 'owner']:
+        # not admin
+        await session.finish('要先把我设置为管理员才可以绑定报名哦～')
+
+    if group_id and await dao.bind_event_with_qq_group(event, group_id):
+        await session.send(f'已成功将本群绑定为「{event.title}」活动官方群，'
+                           f'请将加群方式设置为「需要验证消息」，'
+                           f'我会自动同意已经报名的人的加群请求')
+    else:
+        await session.send('绑定报名失败，请稍后再试')
 
 
 @signup_export.args_parser
 @signup_end.args_parser
+@signup_bind_group.args_parser
 async def _(session: CommandSession):
     stripped_arg = session.current_arg_text.strip()
-    if session.is_first_run and stripped_arg:
-        session.args['code'] = stripped_arg
+    if session.is_first_run:
+        if stripped_arg:
+            session.args['code'] = stripped_arg
     elif stripped_arg:
         session.args[session.current_key] = stripped_arg
     else:

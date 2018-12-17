@@ -11,6 +11,7 @@ class Event(db.Model):
     context_id = db.Column(db.String(100), nullable=False)
     start_time = db.Column(db.Integer, nullable=False)
     end_time = db.Column(db.Integer)
+    qq_group_number = db.Column(db.Integer)
 
     def __repr__(self):
         return f'<Event (id={self.id}, title={self.title})>'
