@@ -82,9 +82,6 @@ def init():
             last_collect_dt = curr_dt
 
     atexit.register(finalize)
-    signal.signal(signal.SIGINT, finalize)
-    signal.signal(signal.SIGBREAK, finalize)
-    signal.signal(signal.SIGTERM, finalize)
 
 
 init()
