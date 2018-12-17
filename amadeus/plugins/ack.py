@@ -10,4 +10,4 @@ async def _(session: NLPSession):
             nick = nicks[0]
         else:
             nick = None
-        await session.send(f'{nick or ""}听着呢～')
+        await session.send(f'小主人好呀，{nick or ""}听着呢')
