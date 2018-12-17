@@ -11,7 +11,7 @@ class Event(db.Model):
     context_id = db.Column(db.String(100), nullable=False)
     start_time = db.Column(db.Integer, nullable=False)
     end_time = db.Column(db.Integer)
-    qq_group_number = db.Column(db.Integer)
+    qq_group_number = db.Column(db.BigInteger)
 
     def __repr__(self):
         return f'<Event (id={self.id}, title={self.title})>'
@@ -26,7 +26,7 @@ class Signup(db.Model):
                          db.ForeignKey(f'{Event.__tablename__}.id'),
                          nullable=False)
     field_values = db.Column(db.JSON, nullable=False)
-    qq_number = db.Column(db.Integer)
+    qq_number = db.Column(db.BigInteger)
 
     @db.declared_attr
     def __table_args__(cls):
