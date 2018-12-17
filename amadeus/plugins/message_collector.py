@@ -2,7 +2,6 @@ import asyncio
 import atexit
 from datetime import datetime
 from os import path
-import signal
 from typing import Optional
 
 from none import on_natural_language, NLPSession, get_bot
