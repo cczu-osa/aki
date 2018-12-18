@@ -4,6 +4,7 @@ from none import CommandSession, on_request, RequestSession
 
 from amadeus.command import allow_cancellation
 from amadeus.db import db
+from amadeus.log import logger
 from . import dao, cg
 from .models import Event, Signup
 
@@ -98,14 +99,15 @@ async def _(session: RequestSession):
     group_id = session.ctx['group_id']
     user_id = session.ctx['user_id']
 
-    count = await db.select([db.func.count(Signup.id)]).where(
-        (Signup.event_id == Event.id) &
-        (Signup.qq_number == user_id) &
-        (Event.qq_group_number == group_id)
-    ).gino.scalar()
+    try:
+        count = await db.select([db.func.count(Signup.id)]).where(
+            (Signup.event_id == Event.id) &
+            (Signup.qq_number == user_id) &
+            (Event.qq_group_number == group_id)
+        ).gino.scalar()
 
-    if count > 0:
-        # the user has signed up
-        await session.approve()
-    else:
-        await session.reject('请先报名才能加群哦')
+        if count > 0:
+            # the user has signed up
+            await session.approve()
+    except Exception as e:
+        logger.exception(e)
