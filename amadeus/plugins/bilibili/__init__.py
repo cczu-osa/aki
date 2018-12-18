@@ -1,5 +1,5 @@
-import re
 import math
+import re
 
 from none import CommandGroup, CommandSession
 

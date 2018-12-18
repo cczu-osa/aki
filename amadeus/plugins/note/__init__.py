@@ -6,18 +6,17 @@ which means none.helpers.context_id() are used to generate a
 global unique id to identify who is one note belonging to.
 """
 
-import re
 import asyncio
+import re
 
 from none import CommandSession, CommandGroup
 from none.command import call_command
-from none.helpers import context_id
 from none.expression import render
+from none.helpers import context_id
 
 from amadeus import nlp
-from amadeus.db import db
 from amadeus.command import allow_cancellation
-
+from amadeus.db import db
 from . import expressions as expr
 from .models import Note
 

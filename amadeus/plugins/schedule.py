@@ -1,6 +1,6 @@
+import asyncio
 import re
 import shlex
-import asyncio
 from typing import List, Optional
 
 from none import CommandGroup, CommandSession, permission as perm
