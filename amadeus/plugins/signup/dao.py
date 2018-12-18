@@ -32,7 +32,8 @@ async def start_event(ctx: Context_T,
 
 async def end_event(event: Event) -> bool:
     try:
-        await event.update(end_time=dt.beijing_now().timestamp()).apply()
+        await event.update(end_time=dt.beijing_now().timestamp(),
+                           qq_group_number=None).apply()
         return True
     except Exception as e:
         logger.exception(e)

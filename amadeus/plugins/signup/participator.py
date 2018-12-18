@@ -109,5 +109,11 @@ async def _(session: RequestSession):
         if count > 0:
             # the user has signed up
             await session.approve()
+        else:
+            event_count = await db.select([db.func.count(Event.id)]).where(
+                Event.qq_group_number == group_id
+            ).gino.scalar()
+            if event_count > 0:
+                await session.reject('请先报名才能加群哦')
     except Exception as e:
         logger.exception(e)
