@@ -37,12 +37,12 @@ async def _(session: CommandSession):
         return
 
     if not stripped_arg:
-        await session.pause('请发送正确的内容哦')
+        session.pause('请发送正确的内容哦')
         return
 
     if session.current_key == 'title':
         if len(stripped_arg) > 100:
-            await session.pause('活动名称太长啦，换个短一点的吧')
+            session.pause('活动名称太长啦，换个短一点的吧')
         session.args[session.current_key] = stripped_arg
         return
     elif session.current_key == 'fields':
@@ -100,10 +100,10 @@ async def signup_show(session: CommandSession):
         # show one
         event = await dao.get_event(code)
         if not event:
-            await session.finish(f'没有找到你输入的活动码对应的活动哦')
+            session.finish(f'没有找到你输入的活动码对应的活动哦')
 
         if event.context_id != dao.ctx_id_by_user(session.ctx):
-            await session.finish(f'此活动不是由你发起的哦，无法查看报名信息')
+            session.finish(f'此活动不是由你发起的哦，无法查看报名信息')
 
         qq_group = event.qq_group_number or '未绑定'
         start_date = dt.beijing_from_timestamp(
@@ -128,7 +128,7 @@ async def signup_show(session: CommandSession):
 
         p = '已结束的' if show_ended else '正在进行中的'
         if not events:
-            await session.finish(f'你目前没有{p}活动报名')
+            session.finish(f'你目前没有{p}活动报名')
 
         await session.send(f'你发起的{p}活动报名有：')
         await session.send('\n\n'.join(
@@ -155,10 +155,10 @@ async def signup_export(session: CommandSession):
     code = session.get('code', prompt='你要导出报名信息的活动码是？')
     event = await dao.get_event(code)
     if not event:
-        await session.finish(f'没有找到你输入的活动码对应的活动哦')
+        session.finish(f'没有找到你输入的活动码对应的活动哦')
 
     if event.context_id != dao.ctx_id_by_user(session.ctx):
-        await session.finish(f'此活动不是由你发起的哦，无法导出报名信息')
+        session.finish(f'此活动不是由你发起的哦，无法导出报名信息')
 
     signups = await dao.get_all_signups(event)
     await session.send(f'共有 {len(signups)} 条报名信息，'
@@ -187,10 +187,10 @@ async def signup_end(session: CommandSession):
     code = session.get('code', prompt='你要结束报名的活动码是？')
     event = await dao.get_event(code)
     if not event:
-        await session.finish(f'没有找到你输入的活动码对应的活动哦')
+        session.finish(f'没有找到你输入的活动码对应的活动哦')
 
     if event.context_id != dao.ctx_id_by_user(session.ctx):
-        await session.finish(f'此活动不是由你发起的哦，无法结束报名')
+        session.finish(f'此活动不是由你发起的哦，无法结束报名')
 
     if await dao.end_event(event):
         await session.send('结束报名成功')
@@ -204,15 +204,15 @@ async def signup_bind_group(session: CommandSession):
     code = session.get('code', prompt='你要绑定到本群的活动码是？')
     event = await dao.get_event(code)
     if not event:
-        await session.finish(f'没有找到你输入的活动码对应的活动哦')
+        session.finish(f'没有找到你输入的活动码对应的活动哦')
 
     if event.context_id != dao.ctx_id_by_user(session.ctx):
-        await session.finish(f'此活动不是由你发起的哦，无法绑定报名')
+        session.finish(f'此活动不是由你发起的哦，无法绑定报名')
 
     group_id = session.ctx.get('group_id')
     if not group_id:
         # superuser may accidentally call this command, should skip
-        await session.finish('当前聊天不是群聊，无法绑定报名')
+        session.finish('当前聊天不是群聊，无法绑定报名')
 
     try:
         # check my sole in the current group
@@ -225,7 +225,7 @@ async def signup_bind_group(session: CommandSession):
 
     if role not in ['admin', 'owner']:
         # not admin
-        await session.finish('要先把我设置为管理员才可以绑定报名哦～')
+        session.finish('要先把我设置为管理员才可以绑定报名哦～')
 
     if group_id and await dao.bind_event_with_qq_group(event, group_id):
         await session.send(f'已成功将本群绑定为「{event.title}」活动官方群，'
@@ -246,4 +246,4 @@ async def _(session: CommandSession):
     elif stripped_arg:
         session.args[session.current_key] = stripped_arg
     else:
-        await session.pause('请发送正确的内容哦')
+        session.pause('请发送正确的内容哦')

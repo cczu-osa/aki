@@ -17,14 +17,14 @@ async def signup_signup(session: CommandSession):
 
     event = await dao.get_event(code)
     if not event:
-        await session.finish('没有找到这个活动呢～')
+        session.finish('没有找到这个活动呢～')
 
     if event.end_time:
-        await session.finish('该活动报名已经结束啦，请下次再来吧～')
+        session.finish('该活动报名已经结束啦，请下次再来吧～')
 
     signup = await dao.get_signup(session.ctx, event)
     if signup:
-        await session.finish('你已经报过名啦～')
+        session.finish('你已经报过名啦～')
 
     if session.is_first_run:
         await session.send(f'欢迎报名参加活动「{event.title}」\n'
@@ -57,7 +57,7 @@ async def signup_signup(session: CommandSession):
             except (ValueError, IndexError):
                 valid = False
         if not valid:
-            await session.pause('输入不符合要求，请重新输入哦～')
+            session.pause('输入不符合要求，请重新输入哦～')
 
         field_values.append(value)
         session.args['field_values'] = field_values
@@ -66,7 +66,7 @@ async def signup_signup(session: CommandSession):
     signup = await dao.create_signup(session.ctx, event, field_values)
     if not signup:
         if await dao.get_signup(session.ctx, event):
-            await session.finish('你已经报过名啦～')
+            session.finish('你已经报过名啦～')
         else:
             await session.send('报名失败，请稍后重试～')
     else:
@@ -89,7 +89,7 @@ async def _(session: CommandSession):
         return
 
     if not stripped_arg:
-        await session.pause('请发送正确的内容哦')
+        session.pause('请发送正确的内容哦')
 
     session.args[session.current_key] = stripped_arg
 
