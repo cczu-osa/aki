@@ -1,20 +1,19 @@
-import re
 import asyncio
-import math
 import json
+import math
+import re
 from typing import List, Optional, Union, Dict, Collection, Any
 
 from aiocqhttp.message import Message, escape
 from none import on_command, CommandSession
 from none import on_natural_language, NLPSession, NLPResult
-from none.session import BaseSession
 from none.expression import render
 from none.helpers import context_id
+from none.session import BaseSession
 
 from amadeus import nlp
 from amadeus.aio import requests
 from amadeus.log import logger
-
 from . import expressions as expr
 
 # key: context id, value: named entity type
@@ -93,7 +92,8 @@ async def _(session: NLPSession):
 
     if session.ctx['to_me']:
         # if the user is talking to us, we may consider reply to him/her
-        confidence = 60.0
+        # confidence = 60.0
+        confidence = 59.0
 
     ctx_id = context_id(session.ctx)
     if ctx_id in tuling_sessions:
