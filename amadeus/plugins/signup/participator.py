@@ -26,7 +26,8 @@ async def signup_signup(session: CommandSession):
     if signup:
         session.finish('你已经报过名啦～')
 
-    if session.is_first_run:
+    if len(session.args) == 1:
+        # there is only the "code" field in the session
         await session.send(f'欢迎报名参加活动「{event.title}」\n'
                            f'下面我会问你一些问题，以采集必要信息')
 
