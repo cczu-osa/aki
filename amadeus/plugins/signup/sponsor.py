@@ -164,9 +164,9 @@ async def signup_export(session: CommandSession):
     await session.send(f'共有 {len(signups)} 条报名信息，'
                        f'正在上传到文件发送服务，请稍等……')
 
-    csv_content = ','.join([f['name'] for f in event.fields] + ['QQ']) + '\n'
-    csv_content += '\n'.join(','.join(s.field_values + [str(s.qq_number)])
-                             for s in signups)
+    csv_content = ','.join([f['name'] for f in event.fields] + ['QQ']) + '\r\n'
+    csv_content += '\r\n'.join(','.join(s.field_values + [str(s.qq_number)])
+                               for s in signups)
     csv_file = io.BytesIO(csv_content.encode('utf-8'))
     resp = await requests.post(
         'http://tmp.link/openapi/v1',
@@ -174,7 +174,6 @@ async def signup_export(session: CommandSession):
         data={'model': '0', 'action': 'upload'}
     )
     payload = await resp.json()
-    print(payload)
     if payload.get('status') != 0:
         await session.send('上传失败，请稍后再试')
     else:
