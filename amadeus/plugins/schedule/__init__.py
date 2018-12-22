@@ -1,24 +1,25 @@
 import asyncio
 import re
-import shlex
-from typing import List, Optional
+from typing import List
 
 from none import CommandGroup, CommandSession, permission as perm
-from none.argparse import ArgumentParser, ParserExit, Namespace
+from none.argparse import ArgumentParser
 from none.command import parse_command
 from none.helpers import context_id
 
 from amadeus import scheduler
 from amadeus.scheduler import ScheduledCommand
+from . import usage
 
 PLUGIN_NAME = 'schedule'
 
-sched = CommandGroup(PLUGIN_NAME, permission=perm.PRIVATE | perm.GROUP_ADMIN)
+cg = CommandGroup(PLUGIN_NAME, permission=perm.PRIVATE | perm.GROUP_ADMIN,
+                  shell_like=True)
 
 
-@sched.command('add', aliases=('schedule',))
+@cg.command('add', aliases=('schedule',))
 async def sched_add(session: CommandSession):
-    parser = ArgumentParser()
+    parser = ArgumentParser(session=session, usage=usage.ADD)
     parser.add_argument('-S', '--second')
     parser.add_argument('-M', '--minute')
     parser.add_argument('-H', '--hour')
@@ -29,10 +30,7 @@ async def sched_add(session: CommandSession):
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
     parser.add_argument('--name', required=True)
     parser.add_argument('commands', nargs='+')
-
-    args = await parse_args(session, parser,
-                            argv=session.get_optional('argv'),
-                            help_msg=sched_add_help)
+    args = parser.parse_args(session.argv)
 
     if not re.match(r'[_a-zA-Z][_a-zA-Z0-9]*', args.name):
         await session.send(
@@ -86,13 +84,11 @@ async def sched_add(session: CommandSession):
     await session.send(format_job(args.name, job))
 
 
-@sched.command('get')
+@cg.command('get')
 async def sched_get(session: CommandSession):
-    parser = ArgumentParser()
+    parser = ArgumentParser(session=session, usage=usage.GET)
     parser.add_argument('name')
-    args = await parse_args(session, parser,
-                            argv=session.get_optional('argv'),
-                            help_msg=sched_get_help)
+    args = parser.parse_args(session.argv)
     job = await scheduler.get_job(scheduler.make_job_id(
         PLUGIN_NAME, context_id(session.ctx), args.name))
     if not job:
@@ -103,7 +99,7 @@ async def sched_get(session: CommandSession):
     await session.send(format_job(args.name, job))
 
 
-@sched.command('list')
+@cg.command('list')
 async def sched_list(session: CommandSession):
     job_id_prefix = scheduler.make_job_id(PLUGIN_NAME, context_id(session.ctx))
     jobs = await scheduler.get_jobs(scheduler.make_job_id(
@@ -118,44 +114,17 @@ async def sched_list(session: CommandSession):
     await session.send(f'以上是所有的 {len(jobs)} 个计划任务')
 
 
-@sched.command('remove')
+@cg.command('remove')
 async def sched_remove(session: CommandSession):
-    parser = ArgumentParser()
+    parser = ArgumentParser(session=session, usage=usage.REMOVE)
     parser.add_argument('name')
-    args = await parse_args(session, parser,
-                            argv=session.get_optional('argv'),
-                            help_msg=sched_remove_help)
+    args = parser.parse_args(session.argv)
     ok = await scheduler.remove_job(scheduler.make_job_id(
         PLUGIN_NAME, context_id(session.ctx), args.name))
     if ok:
         await session.send(f'成功删除计划任务 {args.name}')
     else:
         await session.send(f'没有找到计划任务 {args.name}，请检查你的输入是否正确')
-
-
-@sched_add.args_parser
-@sched_get.args_parser
-@sched_list.args_parser
-@sched_remove.args_parser
-async def _(session: CommandSession):
-    session.args['argv'] = shlex.split(session.current_arg_text)
-
-
-async def parse_args(session: CommandSession, parser: ArgumentParser,
-                     argv: Optional[List[str]], help_msg: str) -> Namespace:
-    if not argv:
-        await session.send(help_msg)
-    else:
-        try:
-            return parser.parse_args(argv)
-        except ParserExit as e:
-            if e.status == 0:
-                # --help
-                await session.send(help_msg)
-            else:
-                await session.send(
-                    '参数不足或不正确，请使用 --help 参数查询使用帮助')
-    session.finish()  # this will stop the command session
 
 
 def format_job(job_name: str, job: scheduler.Job) -> str:
@@ -167,42 +136,3 @@ def format_job(job_name: str, job: scheduler.Job) -> str:
             f'{job.next_run_time.strftime("%Y-%m-%d %H:%M:%S")}\n'
             f'命令：\n'
             f'{commands_str}')
-
-
-sched_add_help = r"""
-使用方法：
-    schedule.add [OPTIONS] --name NAME COMMAND [COMMAND ...]
-
-OPTIONS：
-    -h, --help  显示本使用帮助
-    -S SECOND, --second SECOND  定时器的秒参数
-    -M MINUTE, --minute MINUTE  定时器的分参数
-    -H HOUR, --hour HOUR  定时器的时参数
-    -d DAY, --day DAY  定时器  的日参数
-    -m MONTH, --month MONTH  定时器的月参数
-    -w DAY_OF_WEEK, --day-of-week DAY_OF_WEEK  定时器的星期参数
-    -f, --force  强制覆盖已有的同名计划任务
-    -v, --verbose  在执行计划任务时输出更多信息
-
-NAME：
-    计划任务名称
-
-COMMAND：
-    要计划执行的命令，如果有空格或特殊字符，需使用引号括起来
-""".strip()
-
-sched_get_help = r"""
-使用方法：
-    schedule.get NAME
-
-NAME：
-    计划任务名称
-""".strip()
-
-sched_remove_help = r"""
-使用方法：
-    schedule.remove NAME
-
-NAME：
-    计划任务名称
-""".strip()
