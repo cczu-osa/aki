@@ -7,14 +7,13 @@ from typing import List, Optional, Union, Dict, Collection, Any
 from aiocqhttp.message import Message, escape
 from none import on_command, CommandSession
 from none import on_natural_language, NLPSession, NLPResult
-from none.expression import render
-from none.helpers import context_id
+from none.helpers import context_id, render_expression as __
 from none.session import BaseSession
 
 from amadeus import nlp
 from amadeus.aio import requests
 from amadeus.log import logger
-from . import expressions as expr
+from . import expressions as e
 
 # key: context id, value: named entity type
 tuling_sessions = {}
@@ -35,7 +34,7 @@ def tuling_ne_type(replies: List[str],
 
 @on_command('tuling', aliases=('聊天', '对话'))
 async def tuling(session: CommandSession):
-    message = session.get('message', prompt_expr=expr.I_AM_READY)
+    message = session.get('message', prompt=__(e.I_AM_READY))
 
     ctx_id = context_id(session.ctx)
     if ctx_id in tuling_sessions:
@@ -55,7 +54,7 @@ async def tuling(session: CommandSession):
             await session.send(escape(reply))
             await asyncio.sleep(0.8)
     else:
-        await session.send_expr(expr.I_DONT_UNDERSTAND)
+        await session.send(__(e.I_DONT_UNDERSTAND))
 
     one_time = session.get_optional('one_time', False)
     if one_time:
@@ -81,7 +80,7 @@ async def _(session: CommandSession):
     if session.current_key == 'message':
         text = session.current_arg_text.strip()
         if ('拜拜' in text or '再见' in text) and len(text) <= 4:
-            session.finish(render(expr.BYE_BYE))
+            session.finish(__(e.BYE_BYE))
             return
         session.args[session.current_key] = session.current_arg
 

@@ -2,25 +2,25 @@ import re
 
 from none import CommandSession, CommandGroup
 from none import on_natural_language, NLPSession, NLPResult
-from none.expression import render
+from none.helpers import render_expression as __
 
 from amadeus import nlp
 from amadeus.command import allow_cancellation
 
-from . import expressions as expr
+from . import expressions as e
 
 w = CommandGroup('weather')
 
 
 @w.command('weather', aliases=('weather', '天气', '天气预报', '查天气'))
 async def weather(session: CommandSession):
-    location = session.get('location', prompt_expr=expr.WHERE)
+    location = session.get('location', prompt=__(e.WHERE))
     # time = session.get_optional('time')
 
     if location.province and not location.city and not location.district:
         # there is no city or district, ask the user for more info!
-        session.get('location_more', prompt=render(expr.WHERE_IN_PROVINCE,
-                                                   province=location.province))
+        session.get('location_more', prompt=__(e.WHERE_IN_PROVINCE,
+                                               province=location.province))
 
     final_loc = location.heweather_format()
     await session.send(f'位置：{final_loc}')

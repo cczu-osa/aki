@@ -115,7 +115,7 @@ async def sched_list(session: CommandSession):
     for job in jobs:
         await session.send(format_job(job.id[len(job_id_prefix):], job))
         await asyncio.sleep(0.8)
-    await session.send_expr(f'以上是所有的 {len(jobs)} 个计划任务')
+    await session.send(f'以上是所有的 {len(jobs)} 个计划任务')
 
 
 @sched.command('remove')

@@ -3,7 +3,7 @@ import re
 from typing import Callable, Any
 
 from none import CommandSession
-from none.expression import render
+from none.helpers import render_expression as __
 
 from .log import logger
 from .nlp import ExampleSentence, sentence_similarity_ex
@@ -75,8 +75,7 @@ async def handle_cancellation(session: CommandSession) -> None:
 
     if should_cancel:
         if not new_ctx_message:
-            session.finish(
-                render(session.bot.config.SESSION_CANCEL_EXPRESSION))
+            session.finish(__(session.bot.config.SESSION_CANCEL_EXPRESSION))
         else:
             session.switch(new_ctx_message)
 
