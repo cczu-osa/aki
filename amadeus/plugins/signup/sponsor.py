@@ -10,7 +10,6 @@ from . import dao, cg
 
 
 @cg.command('start', aliases=['发起报名'])
-@allow_cancellation
 async def signup_start(session: CommandSession):
     title = session.get('title', prompt='你想发起报名的活动名称是？')
     fields = session.get('fields', prompt='你需要参与者填写的信息是？')
@@ -26,6 +25,7 @@ async def signup_start(session: CommandSession):
 
 
 @signup_start.args_parser
+@allow_cancellation
 async def _(session: CommandSession):
     stripped_arg = session.current_arg_text.strip()
 
@@ -93,7 +93,6 @@ async def _(session: CommandSession):
 
 
 @cg.command('show', aliases=['查看报名'])
-@allow_cancellation
 async def signup_show(session: CommandSession):
     code = session.get_optional('code')
     if code:
@@ -137,6 +136,7 @@ async def signup_show(session: CommandSession):
 
 
 @signup_show.args_parser
+@allow_cancellation
 async def _(session: CommandSession):
     stripped_arg = session.current_arg_text.strip()
     if session.is_first_run:
@@ -150,7 +150,6 @@ export_locks = {}
 
 
 @cg.command('export', aliases=['导出报名', '导出报名信息', '导出报名表'])
-@allow_cancellation
 async def signup_export(session: CommandSession):
     code = session.get('code', prompt='你要导出报名信息的活动码是？')
     event = await dao.get_event(code)
@@ -181,7 +180,6 @@ async def signup_export(session: CommandSession):
 
 
 @cg.command('end', aliases=['结束报名'])
-@allow_cancellation
 async def signup_end(session: CommandSession):
     code = session.get('code', prompt='你要结束报名的活动码是？')
     event = await dao.get_event(code)
@@ -198,7 +196,6 @@ async def signup_end(session: CommandSession):
 
 
 @cg.command('bind_group', aliases=['绑定报名'], permission=perm.GROUP_ADMIN)
-@allow_cancellation
 async def signup_bind_group(session: CommandSession):
     code = session.get('code', prompt='你要绑定到本群的活动码是？')
     event = await dao.get_event(code)
@@ -237,6 +234,7 @@ async def signup_bind_group(session: CommandSession):
 @signup_export.args_parser
 @signup_end.args_parser
 @signup_bind_group.args_parser
+@allow_cancellation
 async def _(session: CommandSession):
     stripped_arg = session.current_arg_text.strip()
     if session.is_first_run:
