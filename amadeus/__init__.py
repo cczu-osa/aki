@@ -37,6 +37,7 @@ def init(config_object: Any) -> none.NoneBot:
     none.load_builtin_plugins()
     none.load_plugins(path.join(path.dirname(__file__), 'plugins'),
                       'amadeus.plugins')
-    db.create_all()
+    # use alembic instead
+    # db.create_all()
 
     return bot
