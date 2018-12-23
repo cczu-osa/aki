@@ -112,3 +112,4 @@ venv.bak/
 data
 config_dev.py
 prod
+alembic.ini
