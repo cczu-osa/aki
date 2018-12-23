@@ -1,5 +1,5 @@
 aiocqhttp>=0.6.7
-none-bot>=0.5.0
+none-bot>=0.5.1
 apscheduler~=3.5
 psycopg2~=2.7
 gino~=0.8
