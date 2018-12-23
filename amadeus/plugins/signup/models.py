@@ -12,6 +12,7 @@ class Event(db.Model):
     start_time = db.Column(db.Integer, nullable=False)
     end_time = db.Column(db.Integer)
     qq_group_number = db.Column(db.BigInteger)
+    max_signups = db.Column(db.Integer, nullable=False, default=0)
 
     def __repr__(self):
         return f'<Event (id={self.id}, title={self.title})>'

@@ -25,6 +25,9 @@ async def signup_signup(session: CommandSession):
     if signup:
         session.finish('你已经报过名啦～')
 
+    if 0 < event.max_signups <= await dao.get_signup_count(event):
+        session.finish('该活动报名人数已达上限，请下次再来吧～')
+
     if len(session.args) == 1:
         # there is only the "code" field in the session
         await session.send(f'欢迎报名参加活动「{event.title}」\n'
@@ -65,16 +68,13 @@ async def signup_signup(session: CommandSession):
     # information collection done
     signup = await dao.create_signup(session.ctx, event, field_values)
     if not signup:
-        if await dao.get_signup(session.ctx, event):
-            session.finish('你已经报过名啦～')
-        else:
-            await session.send('报名失败，请稍后重试～')
+        session.finish('报名失败，请稍后重试～')
     else:
         msg = '恭喜你报名成功啦！'
         if event.qq_group_number:
             msg += f'请加入此活动官方群 {event.qq_group_number} ' \
                 f'及时获取活动通知哦（申请将自动通过）～'
-        await session.send(msg)
+        session.finish(msg)
 
 
 @signup_signup.args_parser

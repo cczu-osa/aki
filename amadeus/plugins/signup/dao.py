@@ -16,14 +16,16 @@ ctx_id_by_user = functools.partial(context_id, mode='user')
 
 async def start_event(ctx: Context_T,
                       title: str,
-                      fields: List[Dict[str, Any]]) -> Optional[Event]:
+                      fields: List[Dict[str, Any]],
+                      max_signups: int = 0) -> Optional[Event]:
     try:
         return await Event.create(
             context_id=ctx_id_by_user(ctx),
             title=title,
             code=random_string(8, string.ascii_uppercase + string.digits),
             fields=fields,
-            start_time=dt.beijing_now().timestamp()
+            start_time=dt.beijing_now().timestamp(),
+            max_signups=max_signups,
         )
     except Exception as e:
         logger.exception(e)

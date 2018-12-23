@@ -13,8 +13,11 @@ from . import dao, cg
 async def signup_start(session: CommandSession):
     title = session.get('title', prompt='你想发起报名的活动名称是？')
     fields = session.get('fields', prompt='你需要参与者填写的信息是？')
+    max_signups = session.get('max_signups',
+                              prompt='活动的报名人数上限是多少？\n'
+                                     '（如果不限制报名人数，请发送 0）')
 
-    event = await dao.start_event(session.ctx, title, fields)
+    event = await dao.start_event(session.ctx, title, fields, max_signups)
     if event:
         await session.send(f'你已成功发起「{title}」活动报名\n'
                            f'请让参与者给我发送「报名 {event.code}」来报名此活动～\n'
@@ -90,6 +93,11 @@ async def _(session: CommandSession):
 
         if fields:
             session.args['fields'] = fields
+    elif session.current_key == 'max_signups':
+        try:
+            session.args['max_signups'] = max(0, int(stripped_arg))
+        except ValueError:
+            session.pause('报名人数上限必须是数字哦，如果不限制报名人数，请发送 0')
 
 
 @cg.command('show', aliases=['查看报名'])
@@ -112,6 +120,8 @@ async def signup_show(session: CommandSession):
         signup_count = await dao.get_signup_count(event)
         if signup_count is None:
             signup_count = '查询失败'
+        if event.max_signups > 0:
+            signup_count = f'{signup_count}/{event.max_signups}'
         info = f'活动名称：{event.title}\n' \
             f'活动码：{event.code}\n' \
             f'活动官方群：{qq_group}\n' \
