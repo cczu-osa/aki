@@ -9,7 +9,7 @@ from none.message import Message, handle_message
 @on_command('switch', privileged=True, shell_like=True)
 async def switch(session: CommandSession):
     parser = ArgumentParser(session=session, usage=USAGE)
-    parser.add_argument('-R', '--repeat-message',
+    parser.add_argument('-r', '--repeat-message',
                         action='store_true', default=False)
     parser.add_argument('message')
     args = parser.parse_args(session.argv)
@@ -33,7 +33,7 @@ USAGE = r"""
 
 OPTIONS：
     -h, --help  显示本使用帮助
-    -R, --repeat-message  重复发送 MESSAGE 参数内容
+    -r, --repeat-message  重复发送 MESSAGE 参数内容
 
 MESSAGE：
     新的消息内容
