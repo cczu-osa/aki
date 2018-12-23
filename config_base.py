@@ -6,7 +6,7 @@ NICKNAME = ['奶茶', '小奶茶']
 COMMAND_START = {'', '/', '!', '／', '！'}
 COMMAND_SEP = {'/', '.'}
 SESSION_CANCEL_EXPRESSION = ('好的',)
-SESSION_RUN_TIMEOUT = timedelta(seconds=10)
+SESSION_RUN_TIMEOUT = timedelta(seconds=20)
 
 DATA_FOLDER = path.join(path.dirname(__file__), 'data')
 
