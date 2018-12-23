@@ -10,7 +10,6 @@ from .models import Event, Signup
 
 
 @cg.command('signup', aliases=['报名'])
-@allow_cancellation
 async def signup_signup(session: CommandSession):
     code = session.get('code', prompt='你想报名的活动的活动码是？\n'
                                       '（如果不知道，请询问活动发起人）')
@@ -79,6 +78,7 @@ async def signup_signup(session: CommandSession):
 
 
 @signup_signup.args_parser
+@allow_cancellation
 async def _(session: CommandSession):
     stripped_arg = session.current_arg_text.strip()
 

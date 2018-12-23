@@ -146,9 +146,6 @@ async def _(session: CommandSession):
             session.args['code'] = stripped_arg
 
 
-export_locks = {}
-
-
 @cg.command('export', aliases=['导出报名', '导出报名信息', '导出报名表'])
 async def signup_export(session: CommandSession):
     code = session.get('code', prompt='你要导出报名信息的活动码是？')
@@ -176,7 +173,13 @@ async def signup_export(session: CommandSession):
     if payload.get('status') != 0:
         await session.send('上传失败，请稍后再试')
     else:
-        await session.send(f'上传成功，链接：{payload["data"]["url"]}')
+        url = payload["data"]["url"]
+        if session.ctx['message_type'] == 'group':
+            await session.send(f'「{event.title}」报名表链接：{url}',
+                               ensure_private=True)
+            await session.send('上传成功，链接已私聊发送，请查收')
+        else:
+            await session.send(f'上传成功，链接：{url}')
 
 
 @cg.command('end', aliases=['结束报名'])
