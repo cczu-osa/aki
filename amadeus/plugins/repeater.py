@@ -19,7 +19,9 @@ async def _(session: NLPSession):
     counter[ctx_id] += 1
 
     if counter[ctx_id] == 3:
-        return NLPResult(90.0, ('delayed_echo',), {
-            'delay': random.randint(5, 20) / 10,
-            'message': session.msg
-        })
+        return NLPResult(
+            random.randint(0, 1) * 90.0,
+            ('delayed_echo',),
+            {'delay': random.randint(5, 20) / 10,
+             'message': session.msg}
+        )
