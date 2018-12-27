@@ -1,6 +1,7 @@
 from nonebot import on_command, CommandSession
 
 from amadeus.aio import requests
+from amadeus.command import allow_cancellation
 
 API_URL = 'https://paste.cczu.org/'
 ABOUT_PAGE_URL = 'https://paste.cczu.org/static/about.html'
@@ -30,6 +31,7 @@ async def paste(session: CommandSession):
 
 
 @paste.args_parser
+@allow_cancellation
 async def _(session: CommandSession):
     stripped_arg = session.current_arg_text.rstrip()
     if not session.is_first_run:
