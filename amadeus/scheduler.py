@@ -1,10 +1,10 @@
 import re
 from typing import Dict, Any, Union, List, Tuple
 
-import none
+import nonebot as nb
 from apscheduler.job import Job
 from apscheduler.jobstores.base import ConflictingIdError, JobLookupError
-from none.command import call_command
+from nonebot.command import call_command
 
 from . import aio
 
@@ -40,12 +40,12 @@ class ScheduledCommand:
 
     def __repr__(self):
         return f'<ScheduledCommand (' \
-               f'name={repr(self.name)}, ' \
-               f'current_arg={repr(self.current_arg)})>'
+            f'name={repr(self.name)}, ' \
+            f'current_arg={repr(self.current_arg)})>'
 
     def __str__(self):
         return f'{self.name}' \
-               f'{" " + self.current_arg if self.current_arg else ""}'
+            f'{" " + self.current_arg if self.current_arg else ""}'
 
 
 class SchedulerError(Exception):
@@ -81,7 +81,7 @@ async def add_scheduled_commands(
 
     try:
         return await aio.run_sync_func(
-            none.scheduler.add_job,
+            nb.scheduler.add_job,
             _scheduled_commands_callback,
             id=job_id,
             trigger=trigger, **trigger_args,
@@ -97,7 +97,7 @@ async def _scheduled_commands_callback(
         ctx: Dict[str, Any],
         commands: List[ScheduledCommand]) -> None:
     # get the current bot, we may not in the original running environment now
-    bot = none.get_bot()
+    bot = nb.get_bot()
     for cmd in commands:
         await call_command(bot, ctx, cmd.name, current_arg=cmd.current_arg,
                            check_perm=True, disable_interaction=True)
@@ -105,12 +105,12 @@ async def _scheduled_commands_callback(
 
 async def get_job(job_id: str) -> Job:
     """Get a scheduler job by id."""
-    return await aio.run_sync_func(none.scheduler.get_job, job_id)
+    return await aio.run_sync_func(nb.scheduler.get_job, job_id)
 
 
 async def get_jobs(job_id_prefix: str) -> List[Job]:
     """Get all scheduler jobs with given id prefix."""
-    all_jobs = await aio.run_sync_func(none.scheduler.get_jobs)
+    all_jobs = await aio.run_sync_func(nb.scheduler.get_jobs)
     return list(filter(
         lambda j: j.id.rsplit('/', maxsplit=1)[0] == job_id_prefix.rstrip('/'),
         all_jobs
@@ -120,7 +120,7 @@ async def get_jobs(job_id_prefix: str) -> List[Job]:
 async def remove_job(job_id: str) -> bool:
     """Remove a scheduler job by id."""
     try:
-        await aio.run_sync_func(none.scheduler.remove_job, job_id)
+        await aio.run_sync_func(nb.scheduler.remove_job, job_id)
         return True
     except JobLookupError:
         return False

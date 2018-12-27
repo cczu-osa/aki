@@ -1,6 +1,6 @@
 import re
 
-from none import CommandSession, on_request, RequestSession
+from nonebot import CommandSession, on_request, RequestSession
 
 from amadeus.command import allow_cancellation
 from amadeus.db import db

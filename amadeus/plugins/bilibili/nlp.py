@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timedelta
 
-from none import on_natural_language, NLPSession, NLPResult
+from nonebot import on_natural_language, NLPSession, NLPResult
 
 
 @on_natural_language(keywords=['番', '动漫', '动画'])

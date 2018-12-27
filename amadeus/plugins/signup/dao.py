@@ -2,8 +2,8 @@ import functools
 import string
 from typing import Optional, List, Dict, Any
 
-from none.helpers import context_id
-from none.typing import Context_T
+from nonebot.helpers import context_id
+from nonebot.typing import Context_T
 
 from amadeus import dt
 from amadeus.db import db

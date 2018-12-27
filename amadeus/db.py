@@ -1,7 +1,7 @@
 import asyncio
 
 from gino import Gino
-from none import get_bot
+from nonebot import get_bot
 
 from .log import logger
 

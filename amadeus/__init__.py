@@ -2,13 +2,13 @@ import logging
 from os import path
 from typing import Any
 
-import none
+import nonebot as nb
 
 from . import cache, db, scheduler
 from .log import logger
 
 
-def init(config_object: Any) -> none.NoneBot:
+def init(config_object: Any) -> nb.NoneBot:
     if config_object and \
             hasattr(config_object, 'APSCHEDULER_CONFIG') and \
             hasattr(config_object, 'DATABASE_URL'):
@@ -23,8 +23,8 @@ def init(config_object: Any) -> none.NoneBot:
                 'tablename': db.make_table_name('core', 'apscheduler_jobs')
             }
 
-    none.init(config_object)
-    bot = none.get_bot()
+    nb.init(config_object)
+    bot = nb.get_bot()
 
     if bot.config.DEBUG:
         logger.setLevel(logging.DEBUG)
@@ -34,9 +34,9 @@ def init(config_object: Any) -> none.NoneBot:
     cache.init()
 
     db.init()
-    none.load_builtin_plugins()
-    none.load_plugins(path.join(path.dirname(__file__), 'plugins'),
-                      'amadeus.plugins')
+    nb.load_builtin_plugins()
+    nb.load_plugins(path.join(path.dirname(__file__), 'plugins'),
+                    'amadeus.plugins')
     # use alembic instead
     # db.create_all()
 

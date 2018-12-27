@@ -4,8 +4,8 @@ from datetime import datetime
 from os import path
 from typing import Optional
 
-from none import on_natural_language, NLPSession, get_bot
-from none.helpers import context_id
+from nonebot import on_natural_language, NLPSession, get_bot
+from nonebot.helpers import context_id
 from pandas import DataFrame, read_parquet
 
 from amadeus import fs, aio, dt

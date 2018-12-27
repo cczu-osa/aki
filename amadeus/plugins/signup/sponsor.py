@@ -1,7 +1,7 @@
 import io
 
-import none.permission as perm
-from none import CommandSession, CQHttpError
+import nonebot.permission as perm
+from nonebot import CommandSession, CQHttpError
 
 from amadeus import dt
 from amadeus.aio import requests

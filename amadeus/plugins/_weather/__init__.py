@@ -1,12 +1,11 @@
 import re
 
-from none import CommandSession, CommandGroup
-from none import on_natural_language, NLPSession, NLPResult
-from none.helpers import render_expression as __
+from nonebot import CommandSession, CommandGroup
+from nonebot import on_natural_language, NLPSession, NLPResult
+from nonebot.helpers import render_expression as __
 
 from amadeus import nlp
 from amadeus.command import allow_cancellation
-
 from . import expressions as e
 
 w = CommandGroup('weather')

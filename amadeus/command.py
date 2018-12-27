@@ -2,8 +2,8 @@ import functools
 import re
 from typing import Callable, Any
 
-from none import CommandSession
-from none.helpers import render_expression as __
+from nonebot import CommandSession
+from nonebot.helpers import render_expression as __
 
 from .log import logger
 from .nlp import ExampleSentence, sentence_similarity_ex

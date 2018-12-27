@@ -7,7 +7,7 @@ For API docs, see https://www.ltp-cloud.com/document/.
 import json
 from typing import List, Dict, Any
 
-from none import get_bot
+from nonebot import get_bot
 
 from amadeus.aio import requests
 

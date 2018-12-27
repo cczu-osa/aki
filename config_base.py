@@ -1,6 +1,6 @@
 from os import path
 
-from none.default_config import *
+from nonebot.default_config import *
 
 NICKNAME = ['奶茶', '小奶茶']
 COMMAND_START = {'', '/', '!', '／', '！'}

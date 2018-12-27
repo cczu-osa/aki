@@ -1,9 +1,9 @@
 import random
 from collections import Counter
 
-import none.permission as perm
-from none import on_natural_language, NLPSession, NLPResult
-from none.helpers import context_id
+import nonebot.permission as perm
+from nonebot import on_natural_language, NLPSession, NLPResult
+from nonebot.helpers import context_id
 
 counter = Counter()
 last_msgs = {}

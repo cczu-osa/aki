@@ -9,9 +9,9 @@ global unique id to identify who is one note belonging to.
 import asyncio
 import re
 
-from none import CommandSession, CommandGroup
-from none.command import call_command
-from none.helpers import context_id, render_expression as __
+from nonebot import CommandSession, CommandGroup
+from nonebot.command import call_command
+from nonebot.helpers import context_id, render_expression as __
 
 from amadeus import nlp
 from amadeus.command import allow_cancellation

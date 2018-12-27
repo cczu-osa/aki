@@ -2,10 +2,10 @@ import asyncio
 import re
 from typing import List
 
-from none import CommandGroup, CommandSession, permission as perm
-from none.argparse import ArgumentParser
-from none.command import parse_command
-from none.helpers import context_id
+from nonebot import CommandGroup, CommandSession, permission as perm
+from nonebot.argparse import ArgumentParser
+from nonebot.command import parse_command
+from nonebot.helpers import context_id
 
 from amadeus import scheduler
 from amadeus.scheduler import ScheduledCommand

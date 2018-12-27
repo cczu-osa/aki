@@ -4,9 +4,9 @@ from typing import List, Tuple, Dict, Any, Union
 
 import jieba_fast
 
+from amadeus.api_vendors import heweather
 from amadeus.cache import cached
 from amadeus.log import logger
-from amadeus.api_vendors import heweather
 from . import baidu_aip, ltp_cloud
 
 
@@ -37,9 +37,9 @@ class ExampleSentence:
 
     def __repr__(self):
         return f'<ExampleSentence (text={self.text}, ' \
-               f'avg_score={self.avg_score}, ' \
-               f'total_compare={self.total_compare}, ' \
-               f'solid={self.solid})>'
+            f'avg_score={self.avg_score}, ' \
+            f'total_compare={self.total_compare}, ' \
+            f'solid={self.solid})>'
 
 
 async def sentence_similarity_ex(

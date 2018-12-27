@@ -1,4 +1,4 @@
-from none import CommandGroup
+from nonebot import CommandGroup
 
 cg = CommandGroup('signup')
 

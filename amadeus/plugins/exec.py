@@ -2,9 +2,9 @@ import asyncio
 import pprint
 from typing import Awaitable, Callable
 
-import none.permission as perm
-from none import on_command, CommandSession
-from none.message import unescape
+import nonebot.permission as perm
+from nonebot import on_command, CommandSession
+from nonebot.message import unescape
 
 
 @on_command('exec', permission=perm.SUPERUSER)

@@ -1,7 +1,7 @@
 import random
 
-from none import on_natural_language, NLPSession
-from none.helpers import render_expression as __
+from nonebot import on_natural_language, NLPSession
+from nonebot.helpers import render_expression as __
 
 
 def EXPR_ACK(**kwargs):

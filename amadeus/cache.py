@@ -1,5 +1,5 @@
 from aiocache import caches, cached as raw_cached
-from none import get_bot
+from nonebot import get_bot
 
 
 def init() -> None:

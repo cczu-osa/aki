@@ -5,10 +5,10 @@ import re
 from typing import List, Optional, Union, Dict, Collection, Any
 
 from aiocqhttp.message import Message, escape
-from none import on_command, CommandSession
-from none import on_natural_language, NLPSession, NLPResult
-from none.helpers import context_id, render_expression as __
-from none.session import BaseSession
+from nonebot import on_command, CommandSession
+from nonebot import on_natural_language, NLPSession, NLPResult
+from nonebot.helpers import context_id, render_expression as __
+from nonebot.session import BaseSession
 
 from amadeus import nlp
 from amadeus.aio import requests

@@ -1,7 +1,7 @@
 import asyncio
 
-from none import on_command, CommandSession
-from none.command import call_command
+from nonebot import on_command, CommandSession
+from nonebot.command import call_command
 
 
 @on_command('delayed_echo')

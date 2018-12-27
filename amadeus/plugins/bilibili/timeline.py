@@ -3,7 +3,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 
-from none import CommandSession
+from nonebot import CommandSession
 
 from amadeus.aio import requests
 from amadeus.cache import cached

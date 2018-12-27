@@ -2,7 +2,7 @@ import math
 import re
 from typing import Optional, List, Any, Dict
 
-from none import CommandSession
+from nonebot import CommandSession
 
 from amadeus import dt
 from amadeus.aio import requests

@@ -1,7 +1,7 @@
 import random
 import shlex
 
-from none import CommandGroup, CommandSession
+from nonebot import CommandGroup, CommandSession
 
 cg = CommandGroup('random')
 

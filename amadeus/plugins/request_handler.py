@@ -1,4 +1,4 @@
-from none import on_request, RequestSession
+from nonebot import on_request, RequestSession
 
 
 @on_request('friend', 'group.invite')

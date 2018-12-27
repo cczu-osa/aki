@@ -7,7 +7,7 @@ For API docs, see http://ai.baidu.com/docs#/NLP-API/89828646.
 from typing import Optional, List, Dict, Any
 
 from aip import AipNlp
-from none import get_bot
+from nonebot import get_bot
 
 from amadeus import aio
 

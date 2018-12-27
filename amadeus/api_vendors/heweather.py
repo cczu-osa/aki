@@ -1,7 +1,7 @@
 import json
 from typing import Any, Optional, Dict
 
-from none import get_bot
+from nonebot import get_bot
 
 from amadeus.aio import requests
 from amadeus.cache import cached
