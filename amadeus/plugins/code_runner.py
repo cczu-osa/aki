@@ -33,7 +33,7 @@ GLOT_SUPPORTED_LANGUAGES = {
 }
 
 
-@on_command(('code_runner', 'run'), aliases=['运行代码', '运行'])
+@on_command(('code_runner', 'run'), aliases=['run', '运行代码', '运行'])
 async def run(session: CommandSession):
     supported_languages = ", ".join(sorted(GLOT_SUPPORTED_LANGUAGES.keys()))
     language = session.get('language',
