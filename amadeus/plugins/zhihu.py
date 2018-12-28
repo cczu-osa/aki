@@ -21,7 +21,7 @@ async def get_latest_news() -> Optional[List[Dict[str, Any]]]:
 
 
 @on_command(('zhihu', 'daily'), aliases=['知乎日报'])
-async def paste(session: CommandSession):
+async def _(session: CommandSession):
     stories = await get_latest_news()
     if stories is None:
         session.finish('查询失败了……')
