@@ -28,7 +28,7 @@ async def paste(session: CommandSession):
     elif not stories:
         session.finish('暂时还没有内容哦')
 
-    reply = ('今天的知乎日报内容如下：\n\n' +
+    reply = ('最新的知乎日报内容如下：\n\n' +
              '\n\n'.join(f'{story["title"]}\n'
                          f'{DAILY_STORY_URL.format(id=story["id"])}'
                          for story in stories))
