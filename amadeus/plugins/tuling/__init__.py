@@ -91,8 +91,7 @@ async def _(session: NLPSession):
 
     if session.ctx['to_me']:
         # if the user is talking to us, we may consider reply to him/her
-        # confidence = 60.0
-        confidence = 59.0
+        confidence = 60.0
 
     ctx_id = context_id(session.ctx)
     if ctx_id in tuling_sessions:
@@ -115,21 +114,21 @@ async def _(session: NLPSession):
         })
 
 
-@on_natural_language(keywords={'聊', '说话'})
-async def _(session: NLPSession):
-    text = session.msg_text.strip()
-    confidence = 0.0
-    match = len(text) <= 4 and '陪聊' in text
-    if match:
-        confidence = 100.0
-    else:
-        score = await nlp.sentence_similarity('来陪我聊天', text)
-        if score > 0.70:
-            match = True
-            confidence = math.ceil(score * 10) * 10  # 0.74 -> 80.0
-
-    if match:
-        return NLPResult(confidence, 'tuling', {})
+# @on_natural_language(keywords={'聊', '说话'})
+# async def _(session: NLPSession):
+#     text = session.msg_text.strip()
+#     confidence = 0.0
+#     match = len(text) <= 4 and '陪聊' in text
+#     if match:
+#         confidence = 100.0
+#     else:
+#         score = await nlp.sentence_similarity('来陪我聊天', text)
+#         if score > 0.70:
+#             match = True
+#             confidence = math.ceil(score * 10) * 10  # 0.74 -> 80.0
+#
+#     if match:
+#         return NLPResult(confidence, 'tuling', {})
 
 
 async def call_tuling_api(
