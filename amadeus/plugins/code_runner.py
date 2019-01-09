@@ -3,6 +3,8 @@ from nonebot import on_command, CommandSession
 from amadeus.aio import requests
 from amadeus.command import allow_cancellation
 
+__plugin_name__ = '运行代码'
+
 GLOT_RUN_API_URL = 'https://glot.io/run/{language}?version=latest'
 GLOT_SUPPORTED_LANGUAGES = {
     'assembly': {'ext': 'asm'},

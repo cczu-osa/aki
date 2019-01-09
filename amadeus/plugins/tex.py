@@ -6,6 +6,8 @@ from nonebot import on_command, CommandSession
 
 from amadeus.aio import requests
 
+__plugin_name__ = '公式'
+
 ZHIHU_TEX_SVG_URL = 'https://www.zhihu.com/equation?tex={tex}'
 LATEX2PNG_API_URL = 'http://latex2png.com/'
 LATEX2PNG_IMAGE_URL = 'http://latex2png.com/output//{name}'

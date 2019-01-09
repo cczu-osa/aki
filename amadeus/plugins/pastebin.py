@@ -3,11 +3,13 @@ from nonebot import on_command, CommandSession
 from amadeus.aio import requests
 from amadeus.command import allow_cancellation
 
+__plugin_name__ = 'Pastebin'
+
 API_URL = 'https://paste.cczu.org/'
 ABOUT_PAGE_URL = 'https://paste.cczu.org/static/about.html'
 
 
-@on_command(('pastebin', 'paste'), aliases=['paste', '粘贴'])
+@on_command(('pastebin', 'paste'), aliases=['paste', '粘贴', '粘贴代码'])
 async def paste(session: CommandSession):
     syntax = session.get('syntax',
                          prompt=f'你想粘贴的语法是？\n'

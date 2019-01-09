@@ -3,6 +3,8 @@ import shlex
 
 from nonebot import CommandGroup, CommandSession
 
+__plugin_name__ = '随机'
+
 cg = CommandGroup('random')
 
 

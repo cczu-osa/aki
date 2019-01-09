@@ -15,6 +15,8 @@ from amadeus.aio import requests
 from amadeus.log import logger
 from . import expressions as e
 
+__plugin_name__ = '智能聊天'
+
 # key: context id, value: named entity type
 tuling_sessions = {}
 

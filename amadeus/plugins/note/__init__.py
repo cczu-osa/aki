@@ -19,6 +19,8 @@ from amadeus.db import db
 from . import expressions as e
 from .models import Note
 
+__plugin_name__ = '笔记本'
+
 note = CommandGroup('note')
 
 

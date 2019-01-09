@@ -3,6 +3,8 @@ from nonebot import on_natural_language, NLPSession, NLPResult
 
 from amadeus.aio import requests
 
+__plugin_name__ = '一言'
+
 API_URL = 'https://v1.hitokoto.cn?encode=text'
 
 
@@ -16,6 +18,7 @@ async def _(session: CommandSession):
 
 @on_natural_language({'一言', '骚话'})
 async def _(session: NLPSession):
-    if '君子一言' in session.msg_text or '一言为定' in session.msg_text:
+    non_keywords = {'君子一言', '一言不合', '一言不发', '一言为定'}
+    if any(map(lambda kw: kw in session.msg_text, non_keywords)):
         return
     return NLPResult(80.0, ('hitokoto',))
