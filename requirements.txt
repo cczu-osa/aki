@@ -11,3 +11,4 @@ jieba-fast~=0.52
 pytz~=2018.7
 aiocache~=0.10.0
 alembic~=1.0.3
+ujson~=1.35
