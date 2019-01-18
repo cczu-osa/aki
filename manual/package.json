@@ -1,0 +1,13 @@
+{
+  "name": "amadeus-manual",
+  "version": "1.0.0",
+  "description": "The user guide of Amadeus bot.",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "author": "CCZU OSA",
+  "license": "MIT",
+  "devDependencies": {
+    "screenshoteer": "^1.0.9"
+  }
+}
