@@ -28,3 +28,5 @@ AIOCACHE_DEFAULT_CONFIG = {
         'class': 'aiocache.serializers.PickleSerializer'
     }
 }
+
+MANUAL_IMAGE_URL_FORMAT = 'https://raw.githubusercontent.com/cczu-osa/amadeus/master/manual/screenshots/{}.png'
