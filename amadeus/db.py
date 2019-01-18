@@ -22,8 +22,11 @@ def init() -> None:
     """
     logger.debug('Initializing database')
     bot = get_bot()
-    asyncio.get_event_loop().run_until_complete(
-        db.set_bind(bot.config.DATABASE_URL))
+    if getattr(bot.config, 'DATABASE_URL', None):
+        asyncio.get_event_loop().run_until_complete(
+            db.set_bind(bot.config.DATABASE_URL))
+    else:
+        logger.warning('DATABASE_URL is missing, database may not work')
 
 
 def create_all() -> None:

@@ -11,7 +11,7 @@ from .log import logger
 def init(config_object: Any) -> nb.NoneBot:
     if config_object and \
             hasattr(config_object, 'APSCHEDULER_CONFIG') and \
-            hasattr(config_object, 'DATABASE_URL'):
+            getattr(config_object, 'DATABASE_URL', None):
         # configure none.scheduler
         if 'apscheduler.jobstores.default' not in \
                 config_object.APSCHEDULER_CONFIG:

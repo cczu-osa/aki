@@ -29,6 +29,12 @@ if config is None:
         pass
 
 if config is None:
+    try:
+        import config_base
+    except ImportError:
+        pass
+
+if config is None:
     print('There is no configuration file!', file=sys.stderr)
     exit(1)
 
