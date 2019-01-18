@@ -15,8 +15,19 @@ Amadeus 是基于 [NoneBot] 实现的一个功能型 QQ 机器人，（即将）
 本项目基于 [NoneBot]，因此在尝试运行本项目之前，请先了解 NoneBot 的使用。
 
 ```bash
+# 克隆代码
 git clone https://github.com/cczu-osa/amadeus.git
 cd amadeus
+
+# 创建虚拟环境
+python -m venv venv
+.\venv\Scripts\activate # Windows
+source ./venv/bin/activate # Linux
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 运行
 python run.py
 ```
 

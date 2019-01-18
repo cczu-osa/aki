@@ -30,7 +30,7 @@ if config is None:
 
 if config is None:
     try:
-        import config_base
+        import config_base as config
     except ImportError:
         pass
 
