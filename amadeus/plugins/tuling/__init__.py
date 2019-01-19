@@ -137,12 +137,13 @@ async def call_tuling_api(
         session: BaseSession,
         text: Optional[str],
         image: Optional[Union[List[str], str]]) -> List[str]:
+    url = 'http://openapi.tuling123.com/openapi/api/v2'
+
     api_keys = session.bot.config.TULING_API_KEY
     if not isinstance(api_keys, Iterable) or isinstance(api_keys, str):
         api_keys = [api_keys]
 
     for api_key in api_keys:
-        url = 'http://openapi.tuling123.com/openapi/api/v2'
         payload = {
             'reqType': 0,
             'perception': {},
@@ -174,13 +175,13 @@ async def call_tuling_api(
                 resp_payload = await resp.json()
                 if resp_payload['intent']['code'] == 4003:  # 当日请求超限
                     continue
-
-                return_list = []
-                for result in resp_payload['results']:
-                    res_type = result.get('resultType')
-                    if res_type in ('text', 'url'):
-                        return_list.append(result['values'][res_type])
-                return return_list
+                if resp_payload['results']:
+                    return_list = []
+                    for result in resp_payload['results']:
+                        res_type = result.get('resultType')
+                        if res_type in ('text', 'url'):
+                            return_list.append(result['values'][res_type])
+                    return return_list
         except (requests.RequestException, json.JSONDecodeError,
                 TypeError, KeyError):
             pass
