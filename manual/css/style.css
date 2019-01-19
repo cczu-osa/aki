@@ -137,6 +137,7 @@ main section .author {
 
 .bubble {
     min-height: 20px;
+    max-width: 80%;
     color: #171717;
     background-color: white;
     display: flex;
