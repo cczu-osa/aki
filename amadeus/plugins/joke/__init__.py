@@ -3,6 +3,8 @@ from nonebot import on_natural_language, NLPSession, NLPResult
 
 from .data_source import get_joke
 
+__plugin_name__ = '段子'
+
 
 @on_command('joke', aliases=['笑话'])
 async def _(session: CommandSession):

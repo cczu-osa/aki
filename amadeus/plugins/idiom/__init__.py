@@ -4,6 +4,8 @@ from nonebot import on_natural_language, NLPSession, NLPResult
 
 from .data_source import get_info_of_word
 
+__plugin_name__ = '成语词典'
+
 
 @on_command('idiom', aliases=['查成语', '成语', '成语词典'])
 async def idiom(session: CommandSession):
