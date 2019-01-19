@@ -17,7 +17,6 @@ async def idiom(session: CommandSession):
         return
 
     word_info = await get_info_of_word(session.bot, word)
-    await session.send('你查询的成语是：' + word)
     await session.send(word_info)
 
 
