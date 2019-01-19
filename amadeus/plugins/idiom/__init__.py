@@ -13,8 +13,7 @@ async def idiom(session: CommandSession):
     word = word.strip()
 
     if not word:  # 如果用户发送空格，那么就退出查询
-        await session.send('成功退出成语查询')
-        return
+        session.finish('成功退出成语查询')
 
     word_info = await get_info_of_word(session.bot, word)
     await session.send(word_info)
