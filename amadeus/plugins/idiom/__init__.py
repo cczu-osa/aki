@@ -1,4 +1,4 @@
-import jieba_fast
+from jieba_fast import posseg
 from nonebot import on_command, CommandSession
 from nonebot import on_natural_language, NLPSession, NLPResult
 
@@ -38,6 +38,6 @@ async def _(session: CommandSession):
 @on_natural_language(keywords=['成语', '词典', '字典'])
 async def _(session: NLPSession):
     stripped_msg_text = session.msg_text.strip()
-    for word in jieba_fast.lcut(stripped_msg_text):
-        if word.flag == 'ns':
+    for word in posseg.lcut(stripped_msg_text):
+        if word.flag in ('i', 'l'):  # i 表示成语，l 表示习惯用语（可能是成语）
             return NLPResult(90.0, 'idiom', {'word': word.word})
