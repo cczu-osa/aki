@@ -1,39 +1,36 @@
+import random
+
+from nonebot import NoneBot
+
 from amadeus.aio import requests
-from config_base import JOKE_API_KEY  # 从config_base中导入相关的API_KEY，详情请见config_base
-import random  # 用于随机抽取一组字符串
 
 
-async def get_info_of_joke():
-    joke_data_base = []  # 将原来的全局字典改为局部字典，可以在每次调用这个功能的时候清空列表中旧的笑话，用于存储新的笑话
-    # 1.为了防止内存泄漏的问题 2.避免出现小概率的两次调用发送相同的内容(虽然是随机抽取)
+async def get_joke(bot: NoneBot):
+    resp = await requests.post(
+        'http://v.juhe.cn/joke/content/text.php',
+        # 注：这里请使用 POST 请求，官网上说的 GET 请求无效
+        data={
+            'key': bot.config.JUHE_JOKE_API_KEY,
+            'page': 1,
+            'pagesize': 20,
+        }
+    )
 
-    resp = await requests.post('http://v.juhe.cn/joke/content/text.php?',  # 注：这里请使用post请求，官网上说的get请求无效
-                               data={
-                                   'key': JOKE_API_KEY,
-                                   'page': 1,  # 设置请求页数为1(可不填直接使用默认值1)
-                                   'pagesize': 20,  # 设置接受20条(最大值20)最新短笑话，之后随机抽取一条短笑话返回给用户
-                               }
-                              )
+    payload = await resp.json()
+    if not payload or not isinstance(payload, dict):
+        return '抱歉，没有新段子了～'
 
-    joke_data = await resp.json()
-
-    if not joke_data:
-        joke_resp = '抱歉，暂时无法获取聚合笑话大全的相关数据'
-
-    else:
+    info = ''
+    if payload['error_code'] == 0:
         try:
-            if joke_data['error_code'] == 0:  # 检查返回信息中的错误码，0表示正常，1，表示异常
-                for joke in joke_data['result']['data']:
-                    joke_data_base.append(joke['content'])  # 从返回数据中提取短笑话到本地列表中
+            jokes = [j['content'] for j in payload['result']['data']]
+            if jokes:
+                info = random.choice(jokes)
+                info = info.replace('&nbsp;', '').strip()
+        except KeyError:
+            pass
 
-                joke_resp = random.choice(joke_data_base)
-
-            else:
-                joke_resp = '哎呀，笑话获取失败了呢，你可以重新发送命令或者联系项目的开发者试图解决这个问题'
-        except KeyError:  # key值不存在，可能是接口被关闭或者其他原因
-            joke_resp = '无法获取聚合笑话大全数据了呢，可能是网络服务暂停或者其他的原因，请联系项目的开发者试图解决这个问题吧'
-
-    return f'{joke_resp}'
+    return info or '暂时没有笑话可以讲哦'
 
 
 """
