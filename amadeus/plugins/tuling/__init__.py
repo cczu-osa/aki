@@ -1,8 +1,8 @@
 import asyncio
 import json
-import math
+# import math
 import re
-from typing import List, Optional, Union, Dict, Collection, Any
+from typing import List, Optional, Union, Dict, Collection, Any, Iterable
 
 from aiocqhttp.message import Message, escape
 from nonebot import on_command, CommandSession
@@ -137,43 +137,51 @@ async def call_tuling_api(
         session: BaseSession,
         text: Optional[str],
         image: Optional[Union[List[str], str]]) -> List[str]:
-    url = 'http://openapi.tuling123.com/openapi/api/v2'
-    payload = {
-        'reqType': 0,
-        'perception': {},
-        'userInfo': {
-            'apiKey': session.bot.config.TULING123_API_KEY,
-            'userId': context_id(session.ctx, use_hash=True)
+    api_keys = session.bot.config.TULING_API_KEY
+    if not isinstance(api_keys, Iterable) or isinstance(api_keys, str):
+        api_keys = [api_keys]
+
+    for api_key in api_keys:
+        url = 'http://openapi.tuling123.com/openapi/api/v2'
+        payload = {
+            'reqType': 0,
+            'perception': {},
+            'userInfo': {
+                'apiKey': api_key,
+                'userId': context_id(session.ctx, use_hash=True)
+            }
         }
-    }
 
-    group_unique_id = context_id(session.ctx, mode='group', use_hash=True)
-    if group_unique_id:
-        payload['userInfo']['groupId'] = group_unique_id
+        group_unique_id = context_id(session.ctx, mode='group', use_hash=True)
+        if group_unique_id:
+            payload['userInfo']['groupId'] = group_unique_id
 
-    if image and not isinstance(image, str):
-        image = image[0]
+        if image and not isinstance(image, str):
+            image = image[0]
 
-    if text:
-        payload['perception']['inputText'] = {'text': text}
-        payload['reqType'] = 0
-    elif image:
-        payload['perception']['inputImage'] = {'url': image}
-        payload['reqType'] = 1
-    else:
-        return []
+        if text:
+            payload['perception']['inputText'] = {'text': text}
+            payload['reqType'] = 0
+        elif image:
+            payload['perception']['inputImage'] = {'url': image}
+            payload['reqType'] = 1
+        else:
+            return []
 
-    try:
-        resp = await requests.post(url, json=payload)
-        if resp.ok:
-            resp_payload = await resp.json()
-            if resp_payload.get('results'):
+        try:
+            resp = await requests.post(url, json=payload)
+            if resp.ok:
+                resp_payload = await resp.json()
+                if resp_payload['intent']['code'] == 4003:  # 当日请求超限
+                    continue
+
                 return_list = []
                 for result in resp_payload['results']:
                     res_type = result.get('resultType')
                     if res_type in ('text', 'url'):
                         return_list.append(result['values'][res_type])
                 return return_list
-        return []
-    except (requests.RequestException, json.JSONDecodeError, KeyError):
-        return []
+        except (requests.RequestException, json.JSONDecodeError,
+                TypeError, KeyError):
+            pass
+    return []

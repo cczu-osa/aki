@@ -37,7 +37,7 @@ BAIDU_AIP_SECRET_KEY = ''
 LTP_CLOUD_API_KEY = ''
 
 # 图灵机器人
-TULING123_API_KEY = ''
+TULING_API_KEY = ''
 
 # 聚合数据
 JUHE_JOKE_API_KEY = ''  # 笑话大全
