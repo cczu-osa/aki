@@ -16,12 +16,17 @@ async def _(session: CommandSession):
         await send_manual_image(session, 'index')
         return
 
+    found = False
     for plugin in filter(lambda x: x.name.lower() == plugin_name.lower(),
                          plugins):
+        found = True
         if plugin.usage:
             await session.send(plugin.usage)
         else:
             await send_manual_image(session, plugin.name)
+
+    if not found:
+        await session.send(f'暂时没有 {plugin_name} 这个功能呢')
 
 
 async def send_manual_image(session: CommandSession, plugin_name: str) -> None:
