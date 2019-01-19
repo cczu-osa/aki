@@ -1,6 +1,6 @@
 import random
 from dataclasses import dataclass
-from typing import List, Tuple, Dict, Any, Union
+from typing import List, Tuple, Dict, Any, Union, Optional
 
 import jieba_fast
 
@@ -400,3 +400,19 @@ async def parse_location(
 
     location.other = ''.join(location_words[i:]) or None
     return location
+
+
+def check_confirmation(word: str) -> Optional[bool]:
+    """
+    Check if a word is a confirmation or denial word.
+
+    :param word: word to check
+    :return: True if is confirmation, False if is denial, None if neither
+    """
+    word = word.strip().lower().replace(' ', '').strip(',.!?~，。！？～的呢吧呀')
+    if word in {'要', '用', '是', '好', '对', '嗯', '行', 'ok', 'okay'}:
+        return True
+    if word in {'不', '不要', '不用', '不是', '否', '不好', '不对', '不行',
+                'no', 'nono', 'nonono', '不ok'}:
+        return False
+    return None
