@@ -4,7 +4,7 @@ from nonebot import MessageSegment
 from nonebot import on_command, CommandSession, get_loaded_plugins
 from nonebot import on_natural_language, NLPSession, NLPResult
 
-KEYWORDS = ['帮助', '使用帮助', '使用方法', '使用手册', '帮助手册']
+KEYWORDS = ['帮助', '使用帮助', '使用方法', '使用手册', '帮助手册', '功能', '查看功能']
 
 
 @on_command('man', aliases=['manual', 'help', 'usage', *KEYWORDS])
