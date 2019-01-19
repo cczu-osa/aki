@@ -18,6 +18,10 @@ BAIDU_AIP_SECRET_KEY = ''
 
 LTP_CLOUD_API_KEY = ''
 
+JOKE_API_KEY = ''  # 输入你的api_key,来源：聚合数据服务——笑话大全
+
+DICTIONARY_API_KEY = ''  # 输入你的api_key，来源：聚合数据服务——成语字典
+
 TULING123_API_KEY = ''
 
 MESSAGE_COLLECTOR_DUMP_FREQ = 'H'
