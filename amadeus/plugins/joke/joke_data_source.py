@@ -2,10 +2,11 @@ from amadeus.aio import requests
 from config_base import JOKE_API_KEY  # 从config_base中导入相关的API_KEY，详情请见config_base
 import random  # 用于随机抽取一组字符串
 
-joke_data_base = []
-
 
 async def get_info_of_joke():
+    joke_data_base = []  # 将原来的全局字典改为局部字典，可以在每次调用这个功能的时候清空列表中旧的笑话，用于存储新的笑话
+    # 1.为了防止内存泄漏的问题 2.避免出现小概率的两次调用发送相同的内容(虽然是随机抽取)
+
     resp = await requests.post('http://v.juhe.cn/joke/content/text.php?',  # 注：这里请使用post请求，官网上说的get请求无效
                                data={
                                    'key': JOKE_API_KEY,
