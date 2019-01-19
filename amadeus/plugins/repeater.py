@@ -6,6 +6,8 @@ import nonebot.permission as perm
 from nonebot import on_natural_language, NLPSession, NLPResult
 from nonebot.helpers import context_id
 
+__plugin_name__ = '复读机'
+
 
 @dataclass
 class Record:
