@@ -12,8 +12,8 @@ Aki 是 CCZU OSA 编写的一个基于 [NoneBot] 的一个功能型 QQ 机器人
 
 ```bash
 # 克隆代码
-git clone https://github.com/cczu-osa/amadeus.git
-cd amadeus
+git clone https://github.com/cczu-osa/aki.git
+cd aki
 
 # 创建虚拟环境
 python -m venv venv
@@ -32,7 +32,7 @@ python run.py
 ```python
 from config_base import *
 
-DATABASE_URL = aki
+DATABASE_URL = 'postgresql://user:password@domain.com:5432/aki'
 ```
 
 ## 期望实现的架构
