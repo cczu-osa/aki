@@ -1,7 +1,7 @@
 import os
 import sys
 
-import amadeus
+import aki
 
 deployment_env = os.getenv('DEPLOYMENT_ENV', 'dev').lower()
 
@@ -38,7 +38,7 @@ if config is None:
     print('There is no configuration file!', file=sys.stderr)
     exit(1)
 
-bot = amadeus.init(config)
+bot = aki.init(config)
 app = bot.asgi
 
 if __name__ == '__main__':

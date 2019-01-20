@@ -1,14 +1,10 @@
-# Amadeus
+# Aki
 
-Amadeus 是基于 [NoneBot] 实现的一个功能型 QQ 机器人，（即将）具有常见的查天气、查单词、翻译、教务查询、新闻订阅等功能。
+Aki 是 CCZU OSA 编写的一个基于 [NoneBot] 的一个功能型 QQ 机器人核心，具有常见的查询天气、订阅新闻、运行代码、智能聊天等功能。目前 Aki 以机器人**奶茶**（QQ 号 `1647869577`）作为表现层。
 
 [NoneBot]: https://github.com/richardchien/nonebot
 
-名字来源于动漫《命运石之门 0》中的人工智能 Amadeus，可以通过提取人类记忆来让 Amadeus 拥有其人格、记忆等，动漫中有牧濑红莉栖和比屋定真帆两个版本。
-
-本 repo 的 Amadeus 为一个机器人核心，实际运行中（目前）以**奶茶机器人**作为表现层。
-
-施工中……
+仍在编写中，现在功能还很不完善……
 
 ## 运行
 
@@ -36,7 +32,7 @@ python run.py
 ```python
 from config_base import *
 
-DATABASE_URL = 'postgresql://amadeus:123456@somedomain.com:5432/amadeus'
+DATABASE_URL = aki
 ```
 
 ## 期望实现的架构
