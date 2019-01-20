@@ -409,10 +409,13 @@ def check_confirmation(word: str) -> Optional[bool]:
     :param word: word to check
     :return: True if is confirmation, False if is denial, None if neither
     """
-    word = word.strip().lower().replace(' ', '').strip(',.!?~，。！？～的呢吧呀')
-    if word in {'要', '用', '是', '好', '对', '嗯', '行', 'ok', 'okay'}:
+    word = word.strip().lower().replace(' ', '') \
+        .strip(',.!?~，。！？～了的呢吧呀啊')
+    if word in {'要', '用', '是', '好', '对', '嗯', '行',
+                'ok', 'okay', 'yeah', 'yep',
+                '当真', '当然', '必须', '可以'}:
         return True
-    if word in {'不', '不要', '不用', '不是', '否', '不好', '不对', '不行',
-                'no', 'nono', 'nonono', '不ok'}:
+    if word in {'不', '不要', '不用', '不是', '否', '不好', '不对', '不行', '别',
+                'no', 'nono', 'nonono', 'nope', '不ok'}:
         return False
     return None

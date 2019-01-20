@@ -5,8 +5,15 @@ from nonebot.default_config import *
 NICKNAME = ['奶茶', '小奶茶']
 COMMAND_START = {'', '/', '!', '／', '！'}
 COMMAND_SEP = {'/', '.'}
-SESSION_CANCEL_EXPRESSION = ('好的',)
 SESSION_RUN_TIMEOUT = timedelta(seconds=20)
+
+# 用户取消交互时的回复
+SESSION_CANCEL_EXPRESSION = (
+    '好的',
+    '好的吧',
+    '好吧，那奶茶就不打扰啦',
+    '那奶茶先不打扰小主人啦',
+)
 
 # 数据文件夹
 DATA_FOLDER = path.join(path.dirname(__file__), 'data')
