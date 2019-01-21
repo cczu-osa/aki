@@ -33,7 +33,7 @@ async def search_song_id(keyword: str) -> Optional[int]:
 
 @on_command('music', aliases=['点歌', '音乐'], only_to_me=False)
 async def music(session: CommandSession):
-    keyword = session.get('keyword', prompt='你想点什么歌呢？')
+    keyword = session.get('keyword', prompt='你想听什么歌呢？')
     song_id = await search_song_id(keyword)
     if song_id is None:
         session.finish('没有找到这首歌呢')
