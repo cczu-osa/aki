@@ -12,12 +12,13 @@ async def speak_to_me(session: CommandSession):
 
 
 @on_command(('speak', 'to_all'), aliases=['跟大家说'], permission=perm.GROUP)
-async def speak_to_me(session: CommandSession):
+async def speak_to_all(session: CommandSession):
     content = session.get('content', prompt='跟大家说啥？')
     session.finish(content)
 
 
 @speak_to_me.args_parser
+@speak_to_all.args_parser
 async def _(session: CommandSession):
     stripped_arg = session.current_arg.strip()
     if session.is_first_run:
