@@ -35,6 +35,9 @@ AIOCACHE_DEFAULT_CONFIG = {
 # 使用手册图片地址
 MANUAL_IMAGE_URL_FORMAT = 'https://raw.githubusercontent.com/cczu-osa/aki/master/manual/screenshots/{}.png'
 
+# 允许和炸毛互动的群
+GROUPS_TO_PLAY_WITH_ZHAMAO = []
+
 # 百度 AIP
 BAIDU_AIP_APP_ID = ''
 BAIDU_AIP_API_KEY = ''

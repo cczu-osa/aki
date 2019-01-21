@@ -1,5 +1,7 @@
-from typing import Optional
+import asyncio
 import re
+import time
+from typing import Optional
 
 from nonebot import MessageSegment
 from nonebot import on_command, CommandSession
@@ -33,6 +35,17 @@ async def search_song_id(keyword: str) -> Optional[int]:
 
 @on_command('music', aliases=['点歌', '音乐'], only_to_me=False)
 async def music(session: CommandSession):
+    # 和炸毛互动
+    if session.ctx['message_type'] == 'group' and \
+            session.bot.config.GROUPS_TO_PLAY_WITH_ZHAMAO and \
+            session.ctx['group_id'] in \
+            session.bot.config.GROUPS_TO_PLAY_WITH_ZHAMAO and \
+            not session.get_optional('from_nlp'):
+        ts = int(time.time() / 30)
+        if ts % 2 == 1:  # 奇数炸毛发，奶茶附和
+            await asyncio.sleep(2)
+            session.finish('炸毛哥哥已经回复你啦～')
+
     keyword = session.get('keyword', prompt='你想听什么歌呢？')
     song_id = await search_song_id(keyword)
     if song_id is None:
@@ -61,5 +74,5 @@ CALLING_KEYWORDS = {'来一首', '点一首', '整一首', '播放', '点歌'}
 async def _(session: NLPSession):
     sp = re.split('|'.join(CALLING_KEYWORDS), session.msg_text, maxsplit=1)
     if sp:
-        print(sp[-1].strip(' 吧呗'))
-        return NLPResult(90.0, 'music', {'keyword': sp[-1].strip(' 吧呗')})
+        return NLPResult(90.0, 'music', {'keyword': sp[-1].strip(' 吧呗'),
+                                         'from_nlp': True})
