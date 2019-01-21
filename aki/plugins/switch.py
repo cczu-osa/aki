@@ -22,6 +22,7 @@ async def switch(session: CommandSession):
 
     ctx = session.ctx.copy()
     ctx['message'] = msg
+    ctx['to_me'] = True  # ensure to_me
     asyncio.ensure_future(handle_message(session.bot, ctx))
 
 
