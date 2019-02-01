@@ -1,17 +1,13 @@
-import functools
 import string
 from typing import Optional, List, Dict, Any
 
-from nonebot.helpers import context_id
 from nonebot.typing import Context_T
 
 from aki import dt
 from aki.db import db
-from aki.helpers import random_string
+from aki.helpers import random_string, ctx_id_by_user
 from aki.log import logger
 from .models import Event, Signup
-
-ctx_id_by_user = functools.partial(context_id, mode='user')
 
 
 async def start_event(ctx: Context_T,
