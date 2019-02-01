@@ -9,6 +9,8 @@ from aki.command import allow_cancellation
 from aki.plugins.weather.data_source import get_weather
 from . import expressions as e
 
+__plugin_name__ = '天气'
+
 w = CommandGroup('weather')
 
 
@@ -32,7 +34,9 @@ async def weather_command(session: CommandSession):
 
     for weather in weathers:
         basic = weather['basic']
-        location_name = basic['admin_area'] + basic['parent_city']
+        location_name = basic['admin_area']
+        if basic['admin_area'] != basic['parent_city']:
+            location_name += basic['parent_city']
         if basic['parent_city'] != basic['location']:
             location_name += basic['location']
         report_now = expr(e.REPORT_NOW, **weather['now'])
@@ -67,6 +71,8 @@ async def _(session: CommandSession):
         location = await nlp.parse_location(striped_text_arg)
         if any([location.province, location.city, location.district]):
             session.state['location'] = location
+        else:
+            session.pause('无法识别你输入的城市哦，请重新输入')
     elif session.current_key == 'location_more':
         patched_loc = await nlp.parse_location(striped_text_arg)
         location: nlp.Location = session.state.get('location')
