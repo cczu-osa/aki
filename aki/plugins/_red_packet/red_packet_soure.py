@@ -1,5 +1,5 @@
 import random
-from aki.plugins.signin import data  # 导入用户的小金库数据
+from aki.plugins._signin import data  # 导入用户的小金库数据
 
 
 async def check(red_packet):  # 防止发红包命令重叠或者检查红包剩余金额

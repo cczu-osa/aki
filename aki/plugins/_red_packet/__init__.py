@@ -3,7 +3,7 @@ from nonebot import permission as perm
 from nonebot.helpers import context_id
 
 
-from aki.plugins.signin import data  # 导入用户的小金库数据
+from aki.plugins._signin import data  # 导入用户的小金库数据
 from .red_packet_soure import prepare_red_packet, check, check_get_red_packet, check_red_packet  # 导入处理红包信息的函数
 
 

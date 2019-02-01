@@ -57,5 +57,5 @@ JUHE_JOKE_API_KEY = ''  # 笑话大全
 JUHE_IDIOM_API_KEY = ''  # 成语词典
 
 # 抢红包功能临时数据
-RED_PACKET = 0  # 本次抢红包的剩余金额数
-PER_COINS = {}  # 本次抢红包临时记录
+# RED_PACKET = 0  # 本次抢红包的剩余金额数
+# PER_COINS = {}  # 本次抢红包临时记录
