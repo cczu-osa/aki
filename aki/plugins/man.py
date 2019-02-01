@@ -7,7 +7,8 @@ from nonebot import on_natural_language, NLPSession, IntentCommand
 KEYWORDS = ['帮助', '使用帮助', '使用方法', '使用手册', '帮助手册', '功能', '查看功能']
 
 
-@on_command('man', aliases=['manual', 'help', 'usage', *KEYWORDS])
+@on_command('man', aliases=['manual', 'help', 'usage', *KEYWORDS],
+            only_to_me=False)
 async def _(session: CommandSession):
     plugin_name = session.current_arg_text.strip()
     plugins = list(filter(lambda p: p.name, get_loaded_plugins()))
