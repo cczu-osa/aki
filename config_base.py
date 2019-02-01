@@ -49,6 +49,9 @@ LTP_CLOUD_API_KEY = ''
 # 图灵机器人
 TULING_API_KEY = ''
 
+# 和风天气
+HEWEATHER_KEY = ''
+
 # 聚合数据
 JUHE_JOKE_API_KEY = ''  # 笑话大全
 JUHE_IDIOM_API_KEY = ''  # 成语词典
