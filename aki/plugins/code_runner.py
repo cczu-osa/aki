@@ -5,8 +5,8 @@ from aki.command import allow_cancellation
 
 __plugin_name__ = '运行代码'
 
-GLOT_RUN_API_URL = 'https://glot.io/run/{language}?version=latest'
-GLOT_SUPPORTED_LANGUAGES = {
+RUN_API_URL_FORMAT = 'https://glot.io/run/{}?version=latest'
+SUPPORTED_LANGUAGES = {
     'assembly': {'ext': 'asm'},
     'bash': {'ext': 'sh'},
     'c': {'ext': 'c'},
@@ -37,19 +37,18 @@ GLOT_SUPPORTED_LANGUAGES = {
 
 @on_command(('code_runner', 'run'), aliases=['run', '运行代码', '运行'])
 async def run(session: CommandSession):
-    supported_languages = ", ".join(sorted(GLOT_SUPPORTED_LANGUAGES.keys()))
+    supported_languages = ", ".join(sorted(SUPPORTED_LANGUAGES.keys()))
     language = session.get('language',
                            prompt='你想运行的代码是什么语言？\n'
                            f'目前支持 {supported_languages}')
     code = session.get('code', prompt='你想运行的代码是？')
     await session.send('正在运行，请稍等……')
     resp = await requests.post(
-        GLOT_RUN_API_URL.format(language=language),
+        RUN_API_URL_FORMAT.format(language),
         json={
             'files': [{
-                'name': (GLOT_SUPPORTED_LANGUAGES[language].get('name',
-                                                                'main') +
-                         f'.{GLOT_SUPPORTED_LANGUAGES[language]["ext"]}'),
+                'name': (SUPPORTED_LANGUAGES[language].get('name', 'main') +
+                         f'.{SUPPORTED_LANGUAGES[language]["ext"]}'),
                 "content": code
             }],
             'stdin': '',
@@ -78,7 +77,7 @@ async def _(session: CommandSession):
     if not session.is_first_run:
         if not stripped_arg:
             session.pause('请输入有效内容')
-        session.args[session.current_key] = stripped_arg
+        session.state[session.current_key] = stripped_arg
         return
 
     if not stripped_arg:
@@ -87,11 +86,11 @@ async def _(session: CommandSession):
     # first argument is not empty
     language, *remains = stripped_arg.split('\n', maxsplit=1)
     language = language.strip()
-    if language not in GLOT_SUPPORTED_LANGUAGES:
+    if language not in SUPPORTED_LANGUAGES:
         session.finish('暂时不支持运行你输入的编程语言')
-    session.args['language'] = language
+    session.state['language'] = language
 
     if remains:
         code = remains[0].strip()
         if code:
-            session.args['code'] = code
+            session.state['code'] = code

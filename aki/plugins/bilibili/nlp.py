@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timedelta
 
-from nonebot import on_natural_language, NLPSession, NLPResult
+from nonebot import on_natural_language, NLPSession, IntentCommand
 
 
 @on_natural_language(keywords=['番', '动漫', '动画'])
@@ -21,13 +21,13 @@ async def _(session: NLPSession):
     if month:
         args['month'] = int(month)
 
-    possibility = 90
+    confidence = 90
     if '哪些' in session.msg_text or '什么' in session.msg_text:
-        possibility += 3
+        confidence += 3
     if not re.search(r'b\s*站', session.msg_text, re.IGNORECASE):
-        possibility -= 10
+        confidence -= 10
 
-    return NLPResult(possibility, ('bilibili_anime', 'index'), args)
+    return IntentCommand(confidence, ('bilibili_anime', 'index'), args=args)
 
 
 @on_natural_language(keywords=['更新'])
@@ -43,21 +43,21 @@ async def _(session: NLPSession):
     if not name:
         return None
 
-    possibility = 92
+    confidence = 92
     if not day_str:
-        possibility -= 5
+        confidence -= 5
     if '吗' in session.msg_text:
-        possibility += 3
+        confidence += 3
     if not re.search(r'b\s*站', session.msg_text, re.IGNORECASE):
-        possibility -= 10
+        confidence -= 10
 
     delta_day_dict = {'前天': -2, '昨天': -1, '今天': 0,
                       '明天': 1, '后天': 2, '大后天': 3}
     delta_day = delta_day_dict.get(day_str, 0)
     date = (datetime.now() + timedelta(days=delta_day)).strftime('%m-%d')
 
-    return NLPResult(possibility, ('bilibili_anime', 'timeline'),
-                     {'date': date, 'name': name})
+    return IntentCommand(confidence, ('bilibili_anime', 'timeline'),
+                         args={'date': date, 'name': name})
 
 
 @on_natural_language(keywords=['更新'])
@@ -69,9 +69,9 @@ async def _(session: NLPSession):
     if not name:
         return None
 
-    possibility = 90
+    confidence = 90
     if not re.search(r'b\s*站', session.msg_text, re.IGNORECASE):
-        possibility -= 10
+        confidence -= 10
 
-    return NLPResult(possibility, ('bilibili_anime', 'timeline'),
-                     {'name': name})
+    return IntentCommand(confidence, ('bilibili_anime', 'timeline'),
+                         args={'name': name})

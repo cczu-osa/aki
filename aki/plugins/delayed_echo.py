@@ -7,7 +7,7 @@ from nonebot.command import call_command
 @on_command('delayed_echo')
 async def _(session: CommandSession):
     try:
-        delay = float(session.get_optional('delay', 1))
+        delay = float(session.state.get('delay', 1))
     except ValueError:
         delay = 1
     delay = min(delay, 10)
@@ -15,4 +15,4 @@ async def _(session: CommandSession):
     await asyncio.sleep(delay)
     await call_command(session.bot, session.ctx, 'echo',
                        current_arg=session.current_arg,
-                       args=session.args)
+                       args=session.state)

@@ -33,7 +33,7 @@ async def _(session: CommandSession):
     stripped_arg = session.current_arg_text.strip()
 
     if session.is_first_run and stripped_arg:
-        session.args['title'] = stripped_arg
+        session.state['title'] = stripped_arg
         return
 
     if not session.current_key:
@@ -46,7 +46,7 @@ async def _(session: CommandSession):
     if session.current_key == 'title':
         if len(stripped_arg) > 100:
             session.pause('活动名称太长啦，换个短一点的吧')
-        session.args[session.current_key] = stripped_arg
+        session.state[session.current_key] = stripped_arg
         return
     elif session.current_key == 'fields':
         # e.g.
@@ -92,17 +92,17 @@ async def _(session: CommandSession):
             fields.append(field)
 
         if fields:
-            session.args['fields'] = fields
+            session.state['fields'] = fields
     elif session.current_key == 'max_signups':
         try:
-            session.args['max_signups'] = max(0, int(stripped_arg))
+            session.state['max_signups'] = max(0, int(stripped_arg))
         except ValueError:
             session.pause('报名人数上限必须是数字哦，如果不限制报名人数，请发送 0')
 
 
 @cg.command('show', aliases=['查看报名'])
 async def signup_show(session: CommandSession):
-    code = session.get_optional('code')
+    code = session.state.get('code')
     if code:
         # show one
         event = await dao.get_event(code)
@@ -131,7 +131,7 @@ async def signup_show(session: CommandSession):
         await session.send(info)
     else:
         # show all
-        show_ended = session.get_optional('show_ended', False)
+        show_ended = session.state.get('show_ended', False)
         events = list(filter(lambda e: bool(e.end_time) == show_ended,
                              await dao.get_all_events(session.ctx)))
 
@@ -151,9 +151,9 @@ async def _(session: CommandSession):
     stripped_arg = session.current_arg_text.strip()
     if session.is_first_run:
         if stripped_arg == '-e':
-            session.args['show_ended'] = True
+            session.state['show_ended'] = True
         else:
-            session.args['code'] = stripped_arg
+            session.state['code'] = stripped_arg
 
 
 @cg.command('export', aliases=['导出报名', '导出报名信息', '导出报名表'])
@@ -167,13 +167,16 @@ async def signup_export(session: CommandSession):
         session.finish(f'此活动不是由你发起的哦，无法导出报名信息')
 
     signups = await dao.get_all_signups(event)
+    if not signups:
+        session.finish('当前还没有人报名，无法导出报名信息哦')
+
     await session.send(f'共有 {len(signups)} 条报名信息，'
                        f'正在上传到文件发送服务，请稍等……')
 
     csv_content = ','.join([f['name'] for f in event.fields] + ['QQ']) + '\r\n'
     csv_content += '\r\n'.join(','.join(s.field_values + [str(s.qq_number)])
                                for s in signups)
-    csv_file = io.BytesIO(csv_content.encode('utf-8'))
+    csv_file = io.BytesIO(csv_content.encode('utf-8-sig'))
     resp = await requests.post(
         'http://tmp.link/openapi/v1',
         files={'file': (f'a.csv', csv_file)},
@@ -252,8 +255,8 @@ async def _(session: CommandSession):
     stripped_arg = session.current_arg_text.strip()
     if session.is_first_run:
         if stripped_arg:
-            session.args['code'] = stripped_arg
+            session.state['code'] = stripped_arg
     elif stripped_arg:
-        session.args[session.current_key] = stripped_arg
+        session.state[session.current_key] = stripped_arg
     else:
         session.pause('请发送正确的内容哦')

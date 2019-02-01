@@ -1,6 +1,6 @@
 import random
 from dataclasses import dataclass
-from typing import List, Tuple, Dict, Any, Union, Optional
+from typing import List, Tuple, Dict, Any, Union
 
 import jieba_fast
 
@@ -106,7 +106,7 @@ async def sentence_similarity_ex(
 LexerResult_T = List[List[Dict[str, Any]]]
 
 
-@cached()
+@cached(ttl=30 * 24 * 60 * 60)  # cache for 1 month
 async def lexer(text: str) -> LexerResult_T:
     """
     A lexer that segment the input text and do POS tagging and NER on it.
@@ -119,8 +119,8 @@ async def lexer(text: str) -> LexerResult_T:
         return []
 
     lexer_vendors = [
-        (_lexer_baidu_aip, 0.4),
-        # (_lexer_ltp_cloud, 0.6),
+        (_lexer_baidu_aip, 0.6),
+        # (_lexer_ltp_cloud, 0.4),
     ]
 
     f = random.choices(*zip(*lexer_vendors))[0]
@@ -400,22 +400,3 @@ async def parse_location(
 
     location.other = ''.join(location_words[i:]) or None
     return location
-
-
-def check_confirmation(word: str) -> Optional[bool]:
-    """
-    Check if a word is a confirmation or denial word.
-
-    :param word: word to check
-    :return: True if is confirmation, False if is denial, None if neither
-    """
-    word = word.strip().lower().replace(' ', '') \
-        .strip(',.!?~，。！？～了的呢吧呀啊')
-    if word in {'要', '用', '是', '好', '对', '嗯', '行',
-                'ok', 'okay', 'yeah', 'yep',
-                '当真', '当然', '必须', '可以'}:
-        return True
-    if word in {'不', '不要', '不用', '不是', '否', '不好', '不对', '不行', '别',
-                'no', 'nono', 'nonono', 'nope', '不ok'}:
-        return False
-    return None

@@ -5,9 +5,9 @@ import re
 from typing import List, Optional, Union, Dict, Collection, Any, Iterable
 
 from aiocqhttp.message import Message, escape
-from nonebot import on_command, CommandSession
-from nonebot import on_natural_language, NLPSession, NLPResult
-from nonebot.helpers import context_id, render_expression as __
+from nonebot import on_command, CommandSession, IntentCommand
+from nonebot import on_natural_language, NLPSession
+from nonebot.helpers import context_id, render_expression as expr
 from nonebot.session import BaseSession
 
 from aki import nlp
@@ -36,7 +36,7 @@ def tuling_ne_type(replies: List[str],
 
 @on_command('tuling', aliases=('聊天', '对话'))
 async def tuling(session: CommandSession):
-    message = session.get('message', prompt=__(e.I_AM_READY))
+    message = session.get('message', prompt=expr(e.I_AM_READY))
 
     ctx_id = context_id(session.ctx)
     if ctx_id in tuling_sessions:
@@ -56,9 +56,9 @@ async def tuling(session: CommandSession):
             await session.send(escape(reply))
             await asyncio.sleep(0.8)
     else:
-        await session.send(__(e.I_DONT_UNDERSTAND))
+        await session.send(expr(e.I_DONT_UNDERSTAND))
 
-    one_time = session.get_optional('one_time', False)
+    one_time = session.state.get('one_time', False)
     if one_time:
         # tuling123 may opened a session, we should recognize the
         # situation that tuling123 want more information from the user.
@@ -82,9 +82,9 @@ async def _(session: CommandSession):
     if session.current_key == 'message':
         text = session.current_arg_text.strip()
         if ('拜拜' in text or '再见' in text) and len(text) <= 4:
-            session.finish(__(e.BYE_BYE))
+            session.finish(expr(e.BYE_BYE))
             return
-        session.args[session.current_key] = session.current_arg
+        session.state[session.current_key] = session.current_arg
 
 
 @on_natural_language(only_to_me=False)
@@ -110,7 +110,7 @@ async def _(session: NLPSession):
                 break
 
     if confidence:
-        return NLPResult(confidence, 'tuling', {
+        return IntentCommand(confidence, 'tuling', args={
             'message': session.msg,
             'one_time': True
         })

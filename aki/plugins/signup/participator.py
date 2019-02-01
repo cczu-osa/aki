@@ -11,8 +11,10 @@ from .models import Event, Signup
 
 @cg.command('signup', aliases=['报名'])
 async def signup_signup(session: CommandSession):
-    code = session.get('code', prompt='你想报名的活动的活动码是？\n'
-                                      '（如果不知道，请询问活动发起人）')
+    code = session.get(
+        'code',
+        prompt='你想报名的活动的活动码是？\n（如果不知道，请询问活动发起人）',
+    )
 
     event = await dao.get_event(code)
     if not event:
@@ -28,13 +30,13 @@ async def signup_signup(session: CommandSession):
     if 0 < event.max_signups <= await dao.get_signup_count(event):
         session.finish('该活动报名人数已达上限，请下次再来吧～')
 
-    if len(session.args) == 1:
-        # there is only the "code" field in the session
+    if 'fired' not in session.state:
         await session.send(f'欢迎报名参加活动「{event.title}」\n'
                            f'下面我会问你一些问题，以采集必要信息')
+        session.state['fired'] = True
 
     fields = event.fields
-    field_values = session.get_optional('field_values', [])
+    field_values = session.state.get('field_values', [])
 
     for curr_idx in range(len(field_values), len(fields)):
         curr_field = fields[curr_idx]
@@ -63,7 +65,7 @@ async def signup_signup(session: CommandSession):
             session.pause('输入不符合要求，请重新输入哦～')
 
         field_values.append(value)
-        session.args['field_values'] = field_values
+        session.state['field_values'] = field_values
 
     # information collection done
     signup = await dao.create_signup(session.ctx, event, field_values)
@@ -83,7 +85,7 @@ async def _(session: CommandSession):
     stripped_arg = session.current_arg_text.strip()
 
     if session.is_first_run and stripped_arg:
-        session.args['code'] = stripped_arg
+        session.state['code'] = stripped_arg
         return
 
     if not session.current_key:
@@ -92,7 +94,7 @@ async def _(session: CommandSession):
     if not stripped_arg:
         session.pause('请发送正确的内容哦')
 
-    session.args[session.current_key] = stripped_arg
+    session.state[session.current_key] = stripped_arg
 
 
 @on_request('group.add')

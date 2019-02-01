@@ -27,8 +27,8 @@ async def get_anime_list(year: int,
 @cg.command('index', aliases={'番剧索引', '番剧', '新番'})
 async def index(session: CommandSession):
     now = dt.beijing_now()
-    year = session.get_optional('year', now.year)
-    month = session.get_optional('month', now.month)
+    year = session.state.get('year', now.year)
+    month = session.state.get('month', now.month)
     month = math.ceil(month / 3) * 3 - 3 + 1
 
     anime_list = await get_anime_list(year, month)
@@ -44,7 +44,7 @@ async def index(session: CommandSession):
         reply += f'{title}  {index_show}\n'
 
     web_url = WEB_URL.format(year=year, month=month)
-    reply += f'\n更多详细资料见BiliBili官网 {web_url}'
+    reply += f'\n更多详细资料见哔哩哔哩官网 {web_url}'
     session.finish(reply)
 
 
@@ -68,6 +68,6 @@ async def _(session: CommandSession):
         await session.send('抱歉无法识别输入的参数，下面将给出本季度的番剧～')
 
     if year is not None:
-        session.args['year'] = year
+        session.state['year'] = year
     if month is not None:
-        session.args['month'] = month
+        session.state['month'] = month

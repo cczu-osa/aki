@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Dict
 
 import nonebot.permission as perm
-from nonebot import on_natural_language, NLPSession, NLPResult
+from nonebot import on_natural_language, NLPSession, IntentCommand
 from nonebot.helpers import context_id
 
 __plugin_name__ = '复读机'
@@ -37,8 +37,8 @@ async def _(session: NLPSession):
     record.last_user_id = user_id
     record.repeat_count += 1
     if record.repeat_count == 3:
-        return NLPResult(
+        return IntentCommand(
             random.randint(0, 1) * 90.0,
-            ('delayed_echo',),
-            {'delay': random.randint(5, 20) / 10, 'message': msg}
+            'delayed_echo',
+            args={'delay': random.randint(5, 20) / 10, 'message': msg}
         )

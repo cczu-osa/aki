@@ -2,6 +2,8 @@ from nonebot import on_command, CommandSession
 
 from aki.aio import requests
 
+__plugin_name__ = 'airAnime'
+
 ANIME_SEARCH_API_FORMAT = 'http://airanime.applinzi.com/function/sonline.php?kt={}'
 
 SITES = [
@@ -23,7 +25,7 @@ SITES = [
             aliases=['搜动漫', '搜索动漫', '动漫资源', '动漫搜索',
                      '搜番剧', '搜索番剧', '番剧资源', '番剧搜索'])
 async def _(session: CommandSession):
-    keyword = session.get_optional('keyword') or session.current_arg
+    keyword = session.state.get('keyword') or session.current_arg
     keyword = keyword.strip()
     if not keyword:
         session.finish('关键词不能为空哦～')

@@ -5,7 +5,8 @@ from typing import Optional
 
 from nonebot import MessageSegment
 from nonebot import on_command, CommandSession
-from nonebot import on_natural_language, NLPSession, NLPResult
+from nonebot import on_natural_language, NLPSession, IntentCommand
+from nonebot.command.argfilter import extractors, validators
 
 from aki.aio import requests
 from aki.cache import cached
@@ -40,13 +41,18 @@ async def music(session: CommandSession):
             session.bot.config.GROUPS_TO_PLAY_WITH_ZHAMAO and \
             session.ctx['group_id'] in \
             session.bot.config.GROUPS_TO_PLAY_WITH_ZHAMAO and \
-            not session.get_optional('from_nlp'):
+            not session.state.get('from_nlp'):
         ts = int(time.time() / 30)
         if ts % 2 == 1:  # 奇数炸毛发，奶茶附和
             await asyncio.sleep(2)
             session.finish('炸毛哥哥已经回复你啦～')
 
-    keyword = session.get('keyword', prompt='你想听什么歌呢？')
+    keyword = session.get('keyword', prompt='你想听什么歌呢？',
+                          arg_filters=[
+                              extractors.extract_text,
+                              str.strip,
+                              validators.not_empty('歌名不能为空哦，请重新发送')
+                          ])
     song_id = await search_song_id(keyword)
     if song_id is None:
         session.finish('没有找到这首歌呢')
@@ -58,13 +64,8 @@ async def _(session: CommandSession):
     stripped_text = session.current_arg_text.strip()
     if session.is_first_run:
         if stripped_text:
-            session.args['keyword'] = stripped_text
+            session.state['keyword'] = stripped_text
         return
-
-    if not stripped_text:
-        session.pause('请发送有效内容哦～')
-
-    session.args[session.current_key] = stripped_text
 
 
 CALLING_KEYWORDS = {'来一首', '点一首', '整一首', '播放', '点歌'}
@@ -74,5 +75,6 @@ CALLING_KEYWORDS = {'来一首', '点一首', '整一首', '播放', '点歌'}
 async def _(session: NLPSession):
     sp = re.split('|'.join(CALLING_KEYWORDS), session.msg_text, maxsplit=1)
     if sp:
-        return NLPResult(90.0, 'music', {'keyword': sp[-1].strip(' 吧呗'),
-                                         'from_nlp': True})
+        return IntentCommand(90.0, 'music',
+                             args={'keyword': sp[-1].strip(' 吧呗'),
+                                   'from_nlp': True})

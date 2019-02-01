@@ -39,7 +39,7 @@ async def _(session: CommandSession):
     if not session.is_first_run:
         if not stripped_arg:
             session.pause('请输入有效内容')
-        session.args[session.current_key] = stripped_arg
+        session.state[session.current_key] = stripped_arg
         return
 
     if not stripped_arg:
@@ -48,9 +48,9 @@ async def _(session: CommandSession):
     # first argument is not empty
     syntax, *remains = stripped_arg.split('\n', maxsplit=1)
     syntax = syntax.strip()
-    session.args['syntax'] = syntax if syntax != '-' else 'Plains Text'
+    session.state['syntax'] = syntax if syntax != '-' else 'Plains Text'
 
     if remains:
         content = remains[0].strip()
         if content:
-            session.args['content'] = content
+            session.state['content'] = content

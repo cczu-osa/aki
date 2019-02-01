@@ -27,8 +27,8 @@ async def index(session: CommandSession):
     if timeline_list is None:
         session.finish('查询失败了……')
 
-    date = session.get_optional('date')
-    name = session.get_optional('name')
+    date = session.state.get('date')
+    name = session.state.get('name')
 
     if date:
         timeline_list = filter(lambda x: x.get('pub_date', '').endswith(date),
@@ -94,7 +94,7 @@ async def index(session: CommandSession):
 
 @index.args_parser
 async def _(session: CommandSession):
-    if session.args:
+    if session.state:
         return
 
     m = re.search(r'(?:(-?\d{1,2})(?:-(\d{1,2}))?)?\s*(.+)?',
@@ -116,8 +116,8 @@ async def _(session: CommandSession):
     else:
         date = None
 
-    session.args['date'] = date
-    session.args['name'] = name
+    session.state['date'] = date
+    session.state['name'] = name
 
 
 USAGE = r"""

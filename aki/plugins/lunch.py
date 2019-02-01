@@ -3,10 +3,8 @@ import random
 
 from nonebot import on_command, CommandSession
 from nonebot import on_natural_language, NLPSession, NLPResult
-from nonebot.helpers import render_expression as __
-
-from aki.command import allow_cancellation
-from aki.nlp import check_confirmation
+from nonebot.command.argfilter import extractors, converters
+from nonebot.helpers import render_expression as expr
 
 __plugin_name__ = '吃什么'
 
@@ -41,39 +39,36 @@ async def lunch(session: CommandSession):
     where = ['去一食堂', '去二食堂', '吃日夜', '点外卖', '出去吃']
     kind = ['面条', '饭', '炒饭', '早点', '砂锅']
 
-    next1 = session.get_optional('next1')
-    next2 = session.get_optional('next2')
+    request_answer_filters = [
+        extractors.extract_text,
+        str.strip,
+        converters.simple_chinese_to_bool,
+    ]
 
-    if next1 is None:
+    if 'next1' not in session.state:
         # 先随机一个去处，问可不可以
-        await session.send(__(EXPR_WAIT))
+        await session.send(expr(EXPR_WAIT))
         await asyncio.sleep(1)
         session.get('next1',
-                    prompt=random.choice(where) + '吧，' + __(EXPR_HOW))
+                    prompt=random.choice(where) + '吧，' + expr(EXPR_HOW),
+                    arg_filters=request_answer_filters)
 
-    if next2 is None and check_confirmation(next1) is not True:
+    if not session.state['next1']:
         # 去处被否决
-        session.finish(__(EXPR_CANCEL))
+        session.finish(expr(EXPR_CANCEL))
 
     # 去处 OK
-    if next2 is None:
-        session.get('next2', prompt=__(EXPR_REQU))
+    if 'next2' not in session.state:
+        session.get('next2', prompt=expr(EXPR_REQU),
+                    arg_filters=request_answer_filters)
 
-    if check_confirmation(next2) is not True:
-        session.finish(__(EXPR_CANCEL))
+    if not session.state['next2']:
+        session.finish(expr(EXPR_CANCEL))
 
     await asyncio.sleep(0.8)
     await session.send('经奶茶精选，今天' + random.choice(kind) + '与你更配哦🤔')
     await asyncio.sleep(0.3)
-    await session.send(__(EXPR_EMOJI))
-
-
-@lunch.args_parser
-@allow_cancellation
-async def _(session: CommandSession):
-    if session.is_first_run:
-        return
-    session.args[session.current_key] = session.current_arg_text.strip()
+    await session.send(expr(EXPR_EMOJI))
 
 
 @on_natural_language(keywords={'吃什么', '吃啥', '哪吃', '哪儿吃', '哪里吃'})

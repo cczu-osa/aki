@@ -6,10 +6,11 @@ from typing import List
 from nonebot import CommandSession, CommandGroup
 from nonebot import permission as perm
 from nonebot.command import call_command
+from nonebot.command.argfilter import converters, extractors, validators
 from nonebot.helpers import context_id
 
-from aki import scheduler, nlp
-from aki.command import allow_cancellation, handle_cancellation
+from aki import scheduler
+from aki.command import allow_cancellation
 from aki.helpers import random_string
 from aki.scheduler import ScheduledCommand
 
@@ -23,12 +24,15 @@ cg = CommandGroup(
 )
 
 
-@cg.command('subscribe', aliases=['订阅'])
+@cg.command('subscribe', aliases=['订阅', '添加订阅', '新增订阅', '新建订阅'])
 async def subscribe(session: CommandSession):
-    message = session.get('message', prompt='你想订阅什么内容呢？')
+    message = session.get(
+        'message', prompt='你想订阅什么内容呢？',
+        arg_filters=[validators.not_empty('请输入有效内容哦～')]
+    )
 
-    hour = session.get_optional('hour')
-    minute = session.get_optional('minute')
+    hour = session.state.get('hour')
+    minute = session.state.get('minute')
     if hour is None or minute is None:
         time = session.get(
             'time',
@@ -42,7 +46,7 @@ async def subscribe(session: CommandSession):
 
         if m:
             hour = int(m.group('hour'))
-            session.args['hour'] = hour
+            session.state['hour'] = hour
             try:
                 minute = int(m.group('minute') or 0)
             except ValueError:
@@ -50,17 +54,21 @@ async def subscribe(session: CommandSession):
                     minute = 30
                 elif m.group('minute') == '一刻':
                     minute = 15
-            session.args['minute'] = minute
+            session.state['minute'] = minute
         else:
+            del session.state['time']
             session.pause('时间格式不对啦，请重新发送')
 
-    repeat_str = session.get(
+    repeat = session.get(
         'repeat',
-        prompt='是否希望我在推送消息的时候重复你上面发的消息内容呢？（请回答是或否）'
+        prompt='是否希望我在推送消息的时候重复你上面发的消息内容呢？（请回答是或否）',
+        arg_filters=[
+            extractors.extract_text,
+            converters.simple_chinese_to_bool,
+            validators.ensure_true(lambda x: x is not None,
+                                   '我听不懂呀，请用是或否再回答一次呢')
+        ]
     )
-    repeat = nlp.check_confirmation(repeat_str)
-    if repeat is None:
-        session.pause('我听不懂呀，请用是或否再回答一次呢')
 
     escaped_message = message.replace('\\', '\\\\').replace('"', '\\"')
     if repeat:
@@ -87,33 +95,17 @@ async def subscribe(session: CommandSession):
 
 
 @subscribe.args_parser
+@allow_cancellation
 async def _(session: CommandSession):
     if session.is_first_run:
         if session.current_arg:
-            session.args['message'] = session.current_arg
+            session.state['message'] = session.current_arg
         return
-
-    if session.current_key != 'repeat':
-        # handle cancellation manually,
-        # because we want to skip the key "repeat"
-        await handle_cancellation(session)
-
-    if session.current_key == 'message':
-        if not session.current_arg:
-            session.pause('请输入有效内容哦～')
-        session.args['message'] = session.current_arg
-        return
-
-    stripped_text = session.current_arg_text
-    if not stripped_text:
-        session.pause('请输入有效内容哦～')
-
-    session.args[session.current_key] = stripped_text
 
 
 @cg.command('show', aliases=['查看订阅', '我的订阅'])
 async def _(session: CommandSession):
-    jobs = session.get_optional('jobs') or \
+    jobs = session.state.get('jobs') or \
            await get_subscriptions(session.ctx)
 
     if not jobs:
@@ -125,19 +117,26 @@ async def _(session: CommandSession):
     session.finish(f'以上是所有的 {len(jobs)} 个订阅')
 
 
-@cg.command('unsubscribe', aliases=['取消订阅', '停止订阅', '关闭订阅'])
+@cg.command('unsubscribe', aliases=['取消订阅', '停止订阅', '关闭订阅', '删除订阅'])
 async def unsubscribe(session: CommandSession):
-    jobs = session.get_optional('jobs') or \
+    jobs = session.state.get('jobs') or \
            await get_subscriptions(session.ctx)
-    index = session.get_optional('index')
+    index = session.state.get('index')
     if index is None:
-        session.args['jobs'] = jobs
+        session.state['jobs'] = jobs
         await call_command(session.bot, session.ctx, ('subscribe', 'show'),
                            args={'jobs': jobs},
                            disable_interaction=True)
-        index = session.get('index', prompt='你想取消哪一个订阅呢？（请发送序号）')
+        index = session.get(
+            'index', prompt='你想取消哪一个订阅呢？（请发送序号）',
+            arg_filters=[
+                extractors.extract_text,
+                validators.ensure_true(str.isdigit, '请输入序号哦～'),
+                int,
+            ]
+        )
 
-    index = int(index) - 1
+    index = index - 1
     if not (0 <= index < len(jobs)):
         session.finish('没有找到你输入的序号哦')
 
@@ -146,19 +145,6 @@ async def unsubscribe(session: CommandSession):
         session.finish('取消订阅成功')
     else:
         session.finish('出了点问题，请稍后再试吧')
-
-
-@unsubscribe.args_parser
-@allow_cancellation
-async def _(session: CommandSession):
-    if session.is_first_run:
-        return
-
-    if session.current_key == 'index':
-        stripped_arg = session.current_arg_text.strip()
-        if not stripped_arg or not stripped_arg.isdigit():
-            session.pause('请输入序号哦～')
-        session.args['index'] = session.current_arg
 
 
 async def get_subscriptions(ctx) -> List[scheduler.Job]:

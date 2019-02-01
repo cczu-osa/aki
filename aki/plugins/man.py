@@ -2,7 +2,7 @@ from urllib.parse import quote_plus
 
 from nonebot import MessageSegment
 from nonebot import on_command, CommandSession, get_loaded_plugins
-from nonebot import on_natural_language, NLPSession, NLPResult
+from nonebot import on_natural_language, NLPSession, IntentCommand
 
 KEYWORDS = ['帮助', '使用帮助', '使用方法', '使用手册', '帮助手册', '功能', '查看功能']
 
@@ -41,4 +41,4 @@ async def send_manual_image(session: CommandSession, plugin_name: str) -> None:
 @on_natural_language(KEYWORDS)
 async def _(session: NLPSession):
     miss = max(0, len(session.msg_text) - 4) * 5
-    return NLPResult(100.0 - miss, ('man',))
+    return IntentCommand(100.0 - miss, 'man')

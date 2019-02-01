@@ -1,6 +1,6 @@
 from jieba_fast import posseg
 from nonebot import on_command, CommandSession
-from nonebot import on_natural_language, NLPSession, NLPResult
+from nonebot import on_natural_language, NLPSession, IntentCommand
 
 from .data_source import get_info_of_word
 
@@ -26,13 +26,13 @@ async def _(session: CommandSession):
     stripped_arg = session.current_arg_text.strip()
 
     if session.is_first_run and stripped_arg:
-        session.args['word'] = stripped_arg
+        session.state['word'] = stripped_arg
         return
 
     if not session.current_key:
         return
 
-    session.args[session.current_key] = stripped_arg
+    session.state[session.current_key] = stripped_arg
 
 
 @on_natural_language(keywords=['成语', '词典', '字典'])
@@ -40,4 +40,4 @@ async def _(session: NLPSession):
     stripped_msg_text = session.msg_text.strip()
     for word in posseg.lcut(stripped_msg_text):
         if word.flag in ('i', 'l'):  # i 表示成语，l 表示习惯用语（可能是成语）
-            return NLPResult(90.0, 'idiom', {'word': word.word})
+            return IntentCommand(90.0, 'idiom', args={'word': word.word})

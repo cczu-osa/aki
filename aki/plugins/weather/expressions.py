@@ -17,11 +17,11 @@ WHERE_IN_PROVINCE = (
 
 REPORT_NOW = r"""
 现在天气{cond_txt}，气温 {tmp} ℃，体感温度 {fl} ℃，能见度 {vis} km，
-空气湿度 {hum}%，{wind_dir} {wind_sc} 级
+空气湿度 {hum}%，{wind_dir} {wind_sc} 级。
 """.replace('\n', '')
 
 REPORT_FUTURE_DAY = r"""
 {0}（{date}）白天天气{cond_txt_d}，晚上天气{cond_txt_n}，
 气温 {tmp_min}~{tmp_max} ℃，能见度 {vis} km，空气湿度 {hum}%，
-{wind_dir} {wind_sc} 级，降水概率 {pop}%，
+{wind_dir} {wind_sc} 级，降水概率 {pop}%。
 """.replace('\n', '')
