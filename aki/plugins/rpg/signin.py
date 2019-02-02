@@ -1,8 +1,9 @@
 import random
-from datetime import date, timedelta
+from datetime import timedelta
 
 from nonebot import CommandSession, MessageSegment
 
+from aki import dt
 from . import cg
 from . import da
 from .helpers import inject_account
@@ -13,7 +14,7 @@ from .helpers import inject_account
 async def _(session: CommandSession):
     account = session.state['account']
 
-    today = date.today()
+    today = dt.beijing_now().date()
     if account.last_sign_in_date and \
             today - account.last_sign_in_date < timedelta(days=1):
         session.finish('你今天已经签过到啦\n明天再来吧～')
