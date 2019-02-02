@@ -1,8 +1,9 @@
 aiocqhttp>=0.6.7
 nonebot>=1.0.0
-apscheduler~=3.5
-psycopg2~=2.7
-gino~=0.8
+apscheduler==3.5.3
+psycopg2==2.7.6.1
+gino==0.8.1
+alembic==1.0.6
 baidu-aip~=2.2
 pandas~=0.23
 fastparquet~=0.1.6
@@ -11,5 +12,4 @@ requests~=2.20
 jieba-fast~=0.52
 pytz~=2018.7
 aiocache~=0.10.0
-alembic~=1.0.3
 ujson~=1.35
