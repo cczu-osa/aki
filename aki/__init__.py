@@ -31,13 +31,11 @@ def init(config_object: Any) -> nb.NoneBot:
     else:
         logger.setLevel(logging.INFO)
 
-    cache.init()
+    bot.server_app.before_serving(cache.init)
+    bot.server_app.before_serving(db.init)
 
-    db.init()
     nb.load_builtin_plugins()
     nb.load_plugins(path.join(path.dirname(__file__), 'plugins'),
                     'aki.plugins')
-    # use alembic instead
-    # db.create_all()
 
     return bot

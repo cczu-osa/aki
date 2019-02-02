@@ -5,9 +5,6 @@ from nonebot import get_bot
 def init() -> None:
     """
     Initialize the cache module.
-
-    This must be called before any plugins using cache,
-    and after initializing "none" module.
     """
     bot = get_bot()
     caches.set_config({
