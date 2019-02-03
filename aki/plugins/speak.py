@@ -33,7 +33,7 @@ async def _(session: CommandSession):
 
 @on_natural_language
 async def _(session: NLPSession):
-    stripped_msg = session.msg
+    stripped_msg = session.msg.strip()
     if stripped_msg.startswith('跟我说'):
         content = stripped_msg[len('跟我说'):].lstrip()
         return IntentCommand(65.0, ('speak', 'to_me'),
