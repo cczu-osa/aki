@@ -1164,6 +1164,7 @@ async def _(session: CommandSession):
         # 直接结束
         if not session.state['con']:
             session.finish(expr(MD_END_TASK))
+            
         # 继续计算
         else:
             session.state.pop('text')
