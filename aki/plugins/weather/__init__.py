@@ -40,6 +40,11 @@ async def weather_command(session: CommandSession):
         if basic['parent_city'] != basic['location']:
             location_name += basic['location']
         report_now = expr(e.REPORT_NOW, **weather['now'])
+        report_today = expr(
+            e.REPORT_FUTURE_DAY,
+            '今天',
+            **weather['daily_forecast'][0]
+        )
         report_tomorrow = expr(
             e.REPORT_FUTURE_DAY,
             '明天',
@@ -52,6 +57,7 @@ async def weather_command(session: CommandSession):
         )
         await session.send(f'{location_name}\n\n'
                            f'{report_now}\n\n'
+                           f'{report_today}\n\n'
                            f'{report_tomorrow}\n\n'
                            f'{report_after_tomorrow}')
 

@@ -346,11 +346,11 @@ class Location:
         return s
 
 
-@cached()
+@cached(10 * 60)
 async def parse_location(
         location_word: Union[str, List[str]]) -> Location:
     """
-    Parse location like "江苏省南京市浦口区".
+    Parse location like "江苏省常州市武进区".
 
     :param location_word: location word (segmented or not)
     :return: Location object

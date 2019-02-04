@@ -7,7 +7,7 @@ from aki.aio import requests
 from aki.cache import cached
 
 
-@cached()
+@cached(10 * 60)
 async def find(location: str) -> Optional[Dict[str, Any]]:
     try:
         resp = await requests.get(
@@ -19,7 +19,9 @@ async def find(location: str) -> Optional[Dict[str, Any]]:
             }
         )
         if resp.ok:
-            return (await resp.json()).get('HeWeather6', [])[0]
+            results = (await resp.json()).get('HeWeather6', [])
+            assert isinstance(results[0], dict)
+            return results[0]
     except (requests.RequestException, json.JSONDecodeError,
-            AttributeError, IndexError):
+            AttributeError, IndexError, AssertionError):
         pass
