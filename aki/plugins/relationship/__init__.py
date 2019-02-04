@@ -6,6 +6,8 @@ from nonebot.command.argfilter import extractors, converters
 from nonebot import on_natural_language, NLPSession, IntentCommand
 from nonebot.helpers import render_expression as expr
 
+__plugin_name__ = '称呼计算器'
+
 
 @on_command('relationship')
 async def _(session: CommandSession):
