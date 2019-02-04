@@ -1,3 +1,7 @@
+"""
+See https://gitee.com/crossin/snippet/tree/master/relationship.
+"""
+
 import re
 
 _filter = [
