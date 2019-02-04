@@ -1,9 +1,4 @@
 import re
-import asyncio
-from nonebot import on_command, CommandSession
-from nonebot.command.argfilter import extractors, converters
-from nonebot import on_natural_language, NLPSession, NLPResult
-from nonebot.helpers import render_expression as expr
 
 _filter = [
     # 表亲
@@ -1099,78 +1094,3 @@ def get_relation(parameter):
 # assert(set(get_relation({'text':'哥哥的弟弟的爸爸的儿子','sex':1}))==set(['兄弟','自己']))
 # assert(set(get_relation({'text':'爸爸的舅舅','sex':0,'reverse':True}))==set(['外甥孙女']))
 # assert(set(get_relation({'text':'舅爷爷','type':'chain'}))==set(['爸爸的妈妈的兄弟']))
-
-
-NAME = ('嗯，你该叫他：',
-        '哦~~，他是你',
-        '推算出来了🤗，他是你',
-        '😉哈哈，他是你',
-        '嗷呜嗷呜嗷~，你应该叫他')
-
-RE_ASK = ('，还需要继续推算么',
-          '，知道了不',
-          '，懂了没')
-
-MD_END_TASK = ('那好吧',
-               '那就这样吧',
-               '行吧，ByeBye',
-               '好吧',
-               '嗯，那就这样吧')
-
-FAULT_INSERT = ('不对不对，输错了',
-                '哟~，输入的格式不对哦',
-                'No！No！No！格式不对',
-                '貌似他/她跟你不是很熟哦!重输了试试')
-
-INPPUT_MESSAGE = ('来吧，输个你想推算的关系',
-                  '来，简单输一下那人与你的关系')
-
-
-@on_command('relationship')
-async def _(session: CommandSession):
-    while 1:
-        text = session.get_optional('text')
-
-        s = 1 if session.ctx['sender']['sex'] == 'male' or 'unknown' else 0  # 若获取不到性别(默认性别为“男”)
-        r = False
-        t = 'default'
-
-        request_answer_filters = [
-            extractors.extract_text,
-            str.strip,
-            converters.simple_chinese_to_bool,
-        ]
-
-        # 输入关系
-        if 'text' not in session.state:
-            session.get('text', prompt=expr(INPPUT_MESSAGE))
-
-        # 计算结果
-        result = '、'.join(get_relation({'text': text, 'sex': s, 'reverse': r, 'type': t}))
-
-        # 输入格式不正确
-        if result == '':
-            session.state.pop('text')
-            await session.send(expr(FAULT_INSERT))
-            await asyncio.sleep(0.8)
-            continue
-
-        # 返回结果
-        retu = expr(NAME) + result + expr(RE_ASK)
-        session.get('con',
-                    prompt=retu,
-                    arg_filters=request_answer_filters)
-
-        # 直接结束
-        if not session.state['con']:
-            session.finish(expr(MD_END_TASK))
-            
-        # 继续计算
-        else:
-            session.state.pop('text')
-            session.state.pop('con')
-
-
-@on_natural_language(keywords={'亲戚', '关系', '称呼', '关系推算'})
-async def _(session: NLPSession):
-    return NLPResult(80.0, 'relationship')
