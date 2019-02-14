@@ -5,7 +5,7 @@ from nonebot import CommandGroup, CommandSession
 
 __plugin_name__ = '随机'
 
-cg = CommandGroup('random')
+cg = CommandGroup('random', only_to_me=False)
 
 
 @cg.command('number', aliases=['随机数'])

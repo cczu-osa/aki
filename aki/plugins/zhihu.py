@@ -23,7 +23,7 @@ async def get_latest_news() -> Optional[List[Dict[str, Any]]]:
     return payload.get('stories') or []
 
 
-@on_command(('zhihu', 'daily'), aliases=['知乎日报'])
+@on_command(('zhihu', 'daily'), aliases=['知乎日报'], only_to_me=False)
 async def _(session: CommandSession):
     stories = await get_latest_news()
     if stories is None:
@@ -38,6 +38,6 @@ async def _(session: CommandSession):
     session.finish(reply)
 
 
-@on_natural_language({'知乎日报'})
+@on_natural_language({'知乎日报'}, only_to_me=False)
 async def _(session: NLPSession):
     return IntentCommand(80.0, ('zhihu', 'daily'))

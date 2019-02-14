@@ -8,7 +8,7 @@ __plugin_name__ = '一言'
 API_URL = 'https://v1.hitokoto.cn?encode=text'
 
 
-@on_command('hitokoto', aliases=['一言'])
+@on_command('hitokoto', aliases=['一言'], only_to_me=False)
 async def _(session: CommandSession):
     resp = await requests.get(API_URL)
     if not resp.ok:

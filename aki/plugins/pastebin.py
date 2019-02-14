@@ -9,7 +9,8 @@ API_URL = 'https://paste.cczu.org/'
 ABOUT_PAGE_URL = 'https://paste.cczu.org/static/about.html'
 
 
-@on_command(('pastebin', 'paste'), aliases=['paste', '粘贴', '粘贴代码'])
+@on_command(('pastebin', 'paste'), aliases=['paste', '粘贴', '粘贴代码'],
+            only_to_me=False)
 async def paste(session: CommandSession):
     syntax = session.get('syntax',
                          prompt=f'你想粘贴的语法是？\n'

@@ -14,7 +14,8 @@ __plugin_name__ = '天气'
 w = CommandGroup('weather')
 
 
-@w.command('weather', aliases=('weather', '天气', '天气预报', '查天气'))
+@w.command('weather', aliases=('weather', '天气', '天气预报', '查天气'),
+           only_to_me=False)
 async def weather_command(session: CommandSession):
     location = session.get('location', prompt=expr(e.WHERE))
     if location.province and not location.city and not location.district:

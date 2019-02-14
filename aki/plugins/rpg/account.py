@@ -6,7 +6,8 @@ from .helpers import inject_account
 from .models import Account
 
 
-@cg.command('account', aliases=['我的账号', '我的账户', '小金库', '我的财富'])
+@cg.command('account', aliases=['我的账号', '我的账户', '小金库', '我的财富'],
+            only_to_me=False)
 @inject_account
 async def _(session: CommandSession):
     account = session.state['account']

@@ -7,7 +7,7 @@ from .data_source import get_info_of_word
 __plugin_name__ = '成语词典'
 
 
-@on_command('idiom', aliases=['查成语', '成语', '成语词典'])
+@on_command('idiom', aliases=['查成语', '成语', '成语词典'], only_to_me=False)
 async def idiom(session: CommandSession):
     word = session.get('word',
                        prompt='请输入你想查询的成语，每次查询仅限输入一个成语'

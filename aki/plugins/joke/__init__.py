@@ -6,7 +6,7 @@ from .data_source import get_joke
 __plugin_name__ = '段子'
 
 
-@on_command('joke', aliases=['笑话'])
+@on_command('joke', aliases=['笑话'], only_to_me=False)
 async def _(session: CommandSession):
     await session.send(await get_joke(session.bot))
 

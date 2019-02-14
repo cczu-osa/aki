@@ -14,7 +14,7 @@ LATEX2PNG_API_URL = 'http://latex2png.com/'
 LATEX2PNG_IMAGE_URL_FORMAT = 'http://latex2png.com/output//{}'
 
 
-@on_command('tex', aliases=['latex', 'equation', '公式'])
+@on_command('tex', aliases=['latex', 'equation', '公式'], only_to_me=False)
 async def tex(session: CommandSession):
     if session.is_first_run:
         stripped_text = session.current_arg_text.strip()

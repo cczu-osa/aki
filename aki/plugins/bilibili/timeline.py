@@ -21,7 +21,7 @@ async def get_timeline_list() -> Optional[List[Dict[str, Any]]]:
     return payload['result'] or []
 
 
-@cg.command('timeline', aliases={'番剧时间表', '新番时间表'})
+@cg.command('timeline', aliases={'番剧时间表', '新番时间表'}, only_to_me=False)
 async def index(session: CommandSession):
     timeline_list = await get_timeline_list()
     if timeline_list is None:

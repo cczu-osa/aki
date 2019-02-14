@@ -23,7 +23,8 @@ SITES = [
 
 @on_command('airanime',
             aliases=['搜动漫', '搜索动漫', '动漫资源', '动漫搜索',
-                     '搜番剧', '搜索番剧', '番剧资源', '番剧搜索'])
+                     '搜番剧', '搜索番剧', '番剧资源', '番剧搜索'],
+            only_to_me=False)
 async def _(session: CommandSession):
     keyword = session.state.get('keyword') or session.current_arg
     keyword = keyword.strip()

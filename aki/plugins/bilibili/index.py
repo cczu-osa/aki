@@ -24,7 +24,7 @@ async def get_anime_list(year: int,
     return payload['result']['data']
 
 
-@cg.command('index', aliases={'番剧索引', '番剧', '新番'})
+@cg.command('index', aliases={'番剧索引', '番剧', '新番'}, only_to_me=False)
 async def index(session: CommandSession):
     now = dt.beijing_now()
     year = session.state.get('year', now.year)
