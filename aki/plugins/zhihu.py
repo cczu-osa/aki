@@ -1,10 +1,10 @@
 from typing import Optional, List, Dict, Any
 
+from aiocache import cached
 from nonebot import on_command, CommandSession
 from nonebot import on_natural_language, NLPSession, IntentCommand
 
 from aki.aio import requests
-from aki.cache import cached
 
 __plugin_name__ = '知乎'
 

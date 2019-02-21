@@ -3,13 +3,13 @@ import re
 import time
 from typing import Optional
 
+from aiocache import cached
 from nonebot import MessageSegment
 from nonebot import on_command, CommandSession
 from nonebot import on_natural_language, NLPSession, IntentCommand
 from nonebot.command.argfilter import extractors, validators
 
 from aki.aio import requests
-from aki.cache import cached
 
 __plugin_name__ = '点歌'
 

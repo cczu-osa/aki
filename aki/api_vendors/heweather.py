@@ -1,10 +1,10 @@
 import json
 from typing import Any, Optional, Dict
 
+from aiocache import cached
 from nonebot import get_bot
 
 from aki.aio import requests
-from aki.cache import cached
 
 
 @cached(10 * 60)

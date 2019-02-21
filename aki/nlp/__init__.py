@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from typing import List, Tuple, Dict, Any, Union
 
 import jieba_fast
+from aiocache import cached
 
 from aki.api_vendors import heweather
-from aki.cache import cached
 from aki.log import logger
 from . import baidu_aip, ltp_cloud
 

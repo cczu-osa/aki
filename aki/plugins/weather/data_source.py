@@ -1,10 +1,10 @@
 import json
 from typing import Any, Dict, List
 
+from aiocache import cached
 from nonebot import get_bot
 
 from aki.aio import requests
-from aki.cache import cached
 
 API_URL = 'https://free-api.heweather.net/s6/weather'
 

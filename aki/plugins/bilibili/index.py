@@ -2,11 +2,11 @@ import math
 import re
 from typing import Optional, List, Any, Dict
 
+from aiocache import cached
 from nonebot import CommandSession
 
 from aki import dt
 from aki.aio import requests
-from aki.cache import cached
 from . import cg
 
 API_URL = 'https://bangumi.bilibili.com/media/web_api/search/result?season_version=-1&area=-1&is_finish=-1&copyright=-1&season_status=-1&season_month={month}&pub_date={year}&style_id=-1&order=3&st=1&sort=0&page=1&season_type=1&pagesize=20'

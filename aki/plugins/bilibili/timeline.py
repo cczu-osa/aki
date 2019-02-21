@@ -3,10 +3,10 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 
+from aiocache import cached
 from nonebot import CommandSession
 
 from aki.aio import requests
-from aki.cache import cached
 from . import cg
 
 API_URL = 'http://bangumi.bilibili.com/web_api/timeline_v4'
