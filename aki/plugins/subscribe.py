@@ -6,7 +6,9 @@ from typing import List
 from nonebot import CommandSession, CommandGroup
 from nonebot import permission as perm
 from nonebot.command import call_command
-from nonebot.command.argfilter import converters, extractors, validators
+from nonebot.command.argfilter import (
+    converters, extractors, validators, controllers
+)
 from nonebot.helpers import context_id
 
 from aki import scheduler
@@ -24,11 +26,16 @@ cg = CommandGroup(
 )
 
 
-@cg.command('subscribe', aliases=['订阅', '添加订阅', '新增订阅', '新建订阅'])
+@cg.command('subscribe', aliases=['订阅', '添加订阅', '新增订阅', '新建订阅'],
+            only_to_me=False)
 async def subscribe(session: CommandSession):
     message = session.get(
         'message', prompt='你想订阅什么内容呢？',
-        arg_filters=[validators.not_empty('请输入有效内容哦～')]
+        arg_filters=[
+            controllers.handle_cancellation(session),
+            str.lstrip,
+            validators.not_empty('请输入有效内容哦～'),
+        ]
     )
 
     hour = session.state.get('hour')
@@ -103,7 +110,7 @@ async def _(session: CommandSession):
         return
 
 
-@cg.command('show', aliases=['查看订阅', '我的订阅'])
+@cg.command('show', aliases=['查看订阅', '我的订阅'], only_to_me=False)
 async def _(session: CommandSession):
     jobs = session.state.get('jobs') or \
            await get_subscriptions(session.ctx)
@@ -117,7 +124,8 @@ async def _(session: CommandSession):
     session.finish(f'以上是所有的 {len(jobs)} 个订阅')
 
 
-@cg.command('unsubscribe', aliases=['取消订阅', '停止订阅', '关闭订阅', '删除订阅'])
+@cg.command('unsubscribe', aliases=['取消订阅', '停止订阅', '关闭订阅', '删除订阅'],
+            only_to_me=False)
 async def unsubscribe(session: CommandSession):
     jobs = session.state.get('jobs') or \
            await get_subscriptions(session.ctx)
@@ -127,10 +135,14 @@ async def unsubscribe(session: CommandSession):
         await call_command(session.bot, session.ctx, ('subscribe', 'show'),
                            args={'jobs': jobs},
                            disable_interaction=True)
+        if not jobs:
+            session.finish()
+
         index = session.get(
             'index', prompt='你想取消哪一个订阅呢？（请发送序号）',
             arg_filters=[
                 extractors.extract_text,
+                controllers.handle_cancellation(session),
                 validators.ensure_true(str.isdigit, '请输入序号哦～'),
                 int,
             ]
