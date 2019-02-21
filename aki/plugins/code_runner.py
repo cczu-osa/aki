@@ -1,4 +1,5 @@
 from nonebot import on_command, CommandSession
+from nonebot.message import escape as message_escape
 
 from aki.aio import requests
 from aki.command import allow_cancellation
@@ -60,15 +61,25 @@ async def run(session: CommandSession):
         session.finish('运行失败，服务可能暂时不可用，请稍后再试')
 
     payload = await resp.json()
-    got_result = False
-    if isinstance(payload, dict):
-        for k in ['stdout', 'stderr', 'error']:
-            v = payload.get(k)
-            if v:
-                await session.send(f'{k}:\n\n{v}')
-                got_result = True
-    if not got_result:
+    if not isinstance(payload, dict):
         session.finish('运行失败，服务可能暂时不可用，请稍后再试')
+
+    sent = False
+    for k in ['stdout', 'stderr', 'error']:
+        v = payload.get(k)
+        lines = v.splitlines()
+        lines, remained = lines[:10], lines[10:]
+        out = '\n'.join(lines)
+        if remained:
+            out += f'\n（内容过多，已忽略剩余的 {len(remained)} 行）'
+
+        out = message_escape(out)
+        if out:
+            await session.send(f'{k}:\n\n{out}')
+            sent = True
+
+    if not sent:
+        session.finish('运行成功，没有任何输出')
 
 
 @run.args_parser
