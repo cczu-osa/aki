@@ -68,10 +68,12 @@ async def run(session: CommandSession):
     for k in ['stdout', 'stderr', 'error']:
         v = payload.get(k)
         lines = v.splitlines()
-        lines, remained = lines[:10], lines[10:]
+        lines, remained_lines = lines[:10], lines[10:]
         out = '\n'.join(lines)
-        if remained:
-            out += f'\n（内容过多，已忽略剩余的 {len(remained)} 行）'
+        out, remained_out = out[:60 * 10], out[60 * 10:]
+
+        if remained_lines or remained_out:
+            out += f'\n（输出过多，已忽略剩余内容）'
 
         out = message_escape(out)
         if out:
