@@ -13,6 +13,7 @@ __plugin_name__ = '亲戚关系计算器'
 
 @on_command('relationship')
 async def _(session: CommandSession):
+    session.finish('本功能正在维护，暂时不可用咯')
     while True:
         text = session.state.get('text')
 
