@@ -34,7 +34,7 @@ class ops:
             await session.send('用法：\n发送到群/QQ [群号/QQ] [内容]')
             session.finish()
 
-@on_command('发送到群', permission=SUPERUSER)
+@on_command('发送到群', permission=SUPERUSER) # 机器人的主人可以操控机器人发送消息
 async def send_to_group(session: CommandSession):
     await ops.send_to_x(session, 'group')
 
